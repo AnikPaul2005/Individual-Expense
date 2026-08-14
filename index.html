@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>SplitMate</title>
 
 <style>
+
 *{
     box-sizing:border-box;
     margin:0;
@@ -48,7 +53,6 @@ header h1{
 .mode{
     display:flex;
     gap:10px;
-    margin-bottom:0;
 }
 
 .mode button{
@@ -249,8 +253,37 @@ button:hover{
     justify-content:space-between;
     align-items:center;
     gap:8px;
-    padding:7px 0;
+    padding:9px 0;
     flex-wrap:wrap;
+    border-bottom:1px solid #eee;
+}
+
+.breakdown-row:last-child{
+    border-bottom:0;
+}
+
+.paid-box{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:13px;
+    font-weight:bold;
+    color:#555;
+}
+
+.paid-box input{
+    width:auto;
+    margin:0;
+}
+
+.paid-text{
+    color:#16a34a;
+    font-weight:bold;
+}
+
+.unpaid-text{
+    color:#dc2626;
+    font-weight:bold;
 }
 
 .filter-row{
@@ -276,8 +309,14 @@ button:hover{
         flex-direction:column;
     }
 
+    .breakdown-row{
+        align-items:flex-start;
+    }
+
 }
+
 </style>
+
 </head>
 
 
@@ -306,23 +345,24 @@ button:hover{
 <button
 id="individualModeBtn"
 class="active"
-onclick="switchMode('individual')"
->
+onclick="switchMode('individual')">
+
 👤 Individual Mode
+
 </button>
 
 
 <button
 id="groupModeBtn"
-onclick="switchMode('group')"
->
+onclick="switchMode('group')">
+
 👥 Group Mode
+
 </button>
 
 </div>
 
 </div>
-
 
 
 <!-- =====================================================
@@ -340,7 +380,6 @@ onclick="switchMode('group')"
 👥 Individual Members
 </div>
 
-
 <div class="row">
 
 <input
@@ -349,28 +388,25 @@ type="text"
 placeholder="Member name"
 >
 
-
 <input
 id="individualPhone"
 type="tel"
 placeholder="WhatsApp number"
 >
 
-
 <button
 class="primary"
-onclick="addIndividualMember()"
->
+onclick="addIndividualMember()">
+
 Add
+
 </button>
 
 </div>
 
-
 <div id="individualMembers"></div>
 
 </div>
-
 
 
 <!-- TRANSACTION -->
@@ -380,7 +416,6 @@ Add
 <div class="title">
 💰 Money Transaction
 </div>
-
 
 <select id="individualMember">
 
@@ -423,7 +458,6 @@ placeholder="Reason / Note"
 📅 Transaction Date
 </div>
 
-
 <input
 id="transactionDate"
 type="date"
@@ -433,13 +467,13 @@ type="date"
 <button
 class="primary"
 style="width:100%"
-onclick="addTransaction()"
->
+onclick="addTransaction()">
+
 + Add Transaction
+
 </button>
 
 </div>
-
 
 
 <!-- BALANCE -->
@@ -450,11 +484,9 @@ onclick="addTransaction()"
 ⚖️ Individual Balances
 </div>
 
-
 <div id="individualBalances"></div>
 
 </div>
-
 
 
 <!-- HISTORY -->
@@ -465,39 +497,37 @@ onclick="addTransaction()"
 📋 Transaction History
 </div>
 
-
 <div class="tabs">
 
 <button
 class="active"
-onclick="filterTransactions('all',this)"
->
+onclick="filterTransactions('all',this)">
+
 All
+
 </button>
 
-
 <button
-onclick="filterTransactions('add',this)"
->
+onclick="filterTransactions('add',this)">
+
 Money Added
+
 </button>
 
-
 <button
-onclick="filterTransactions('spend',this)"
->
+onclick="filterTransactions('spend',this)">
+
 Spent
+
 </button>
 
 </div>
-
 
 <div id="transactionHistory"></div>
 
 </div>
 
 </div>
-
 
 
 <!-- =====================================================
@@ -515,7 +545,6 @@ Spent
 👥 Group Members
 </div>
 
-
 <div class="row">
 
 <input
@@ -524,28 +553,25 @@ type="text"
 placeholder="Member name"
 >
 
-
 <input
 id="memberPhone"
 type="tel"
 placeholder="WhatsApp number"
 >
 
-
 <button
 class="primary"
-onclick="addMember()"
->
+onclick="addMember()">
+
 Add
+
 </button>
 
 </div>
 
-
 <div id="memberList"></div>
 
 </div>
-
 
 
 <!-- ADD EXPENSE -->
@@ -555,7 +581,6 @@ Add
 <div class="title">
 💰 Add Group Expense
 </div>
-
 
 <input
 id="expenseName"
@@ -567,7 +592,6 @@ placeholder="Expense name e.g. Biryani"
 <div style="font-weight:bold;margin:5px 0 8px">
 📅 Expense Date
 </div>
-
 
 <input
 id="expenseDate"
@@ -585,21 +609,22 @@ How do you want to split?
 <button
 id="equalBtn"
 class="active"
-onclick="chooseSplit('equal')"
->
+onclick="chooseSplit('equal')">
+
 ⚖️ Equal Split
+
 </button>
 
 
 <button
 id="differentBtn"
-onclick="chooseSplit('different')"
->
+onclick="chooseSplit('different')">
+
 🍛 Different Amounts
+
 </button>
 
 </div>
-
 
 
 <!-- EQUAL -->
@@ -618,11 +643,9 @@ placeholder="Total bill amount"
 Who is included?
 </div>
 
-
 <div id="equalPeople"></div>
 
 </div>
-
 
 
 <!-- DIFFERENT -->
@@ -632,7 +655,6 @@ Who is included?
 <div style="font-weight:bold;margin:10px 0">
 Enter each person's amount
 </div>
-
 
 <div id="differentPeople"></div>
 
@@ -645,9 +667,10 @@ padding:12px;
 border-radius:8px;
 margin:10px 0;
 font-weight:bold;
-"
->
+">
+
 Total: ₹0.00
+
 </div>
 
 </div>
@@ -665,13 +688,13 @@ Select who paid
 <button
 class="primary"
 style="width:100%"
-onclick="addExpense()"
->
+onclick="addExpense()">
+
 + Add Expense
+
 </button>
 
 </div>
-
 
 
 <!-- GROUP EXPENSE -->
@@ -699,12 +722,10 @@ type="date"
 onchange="renderGroupExpenses()"
 >
 
-
 <input
 id="groupTo"
 type="date"
 onchange="renderGroupExpenses()"
-
 >
 
 </div>
@@ -715,7 +736,6 @@ onchange="renderGroupExpenses()"
 </div>
 
 
-
 <!-- GROUP BALANCE -->
 
 <div class="card">
@@ -724,11 +744,9 @@ onchange="renderGroupExpenses()"
 ⚖️ Group Balance
 </div>
 
-
 <div id="groupBalance"></div>
 
 </div>
-
 
 
 <!-- SETTLEMENT -->
@@ -739,11 +757,9 @@ onchange="renderGroupExpenses()"
 🔄 Settlement
 </div>
 
-
 <div id="settlement"></div>
 
 </div>
-
 
 </div>
 
@@ -755,15 +771,14 @@ style="
 text-align:center;
 padding:25px;
 color:#777;
-"
->
+">
+
 SplitMate © 2026
+
 </footer>
 
 
-
 <script>
-
 
 /* =====================================================
    DATA
@@ -808,6 +823,26 @@ let splitType = "equal";
 let transactionFilter = "all";
 
 
+/* =====================================================
+   FIX OLD DATA
+===================================================== */
+
+expenses.forEach(expense => {
+
+    if(!Array.isArray(expense.shares)){
+        expense.shares = [];
+    }
+
+    expense.shares.forEach(share => {
+
+        if(typeof share.paid !== "boolean"){
+            share.paid = false;
+        }
+
+    });
+
+});
+
 
 /* =====================================================
    STORAGE
@@ -815,37 +850,32 @@ let transactionFilter = "all";
 
 function saveAll(){
 
-localStorage.setItem(
-"sm_members",
-JSON.stringify(members)
-);
+    localStorage.setItem(
+        "sm_members",
+        JSON.stringify(members)
+    );
 
+    localStorage.setItem(
+        "sm_phones",
+        JSON.stringify(memberPhones)
+    );
 
-localStorage.setItem(
-"sm_phones",
-JSON.stringify(memberPhones)
-);
+    localStorage.setItem(
+        "sm_expenses",
+        JSON.stringify(expenses)
+    );
 
+    localStorage.setItem(
+        "sm_individual_members",
+        JSON.stringify(individualMembers)
+    );
 
-localStorage.setItem(
-"sm_expenses",
-JSON.stringify(expenses)
-);
-
-
-localStorage.setItem(
-"sm_individual_members",
-JSON.stringify(individualMembers)
-);
-
-
-localStorage.setItem(
-"sm_transactions",
-JSON.stringify(transactions)
-);
+    localStorage.setItem(
+        "sm_transactions",
+        JSON.stringify(transactions)
+    );
 
 }
-
 
 
 /* =====================================================
@@ -854,39 +884,38 @@ JSON.stringify(transactions)
 
 function switchMode(mode){
 
-document
-.getElementById("individualMode")
-.classList.toggle(
-"hidden",
-mode !== "individual"
-);
+    document
+    .getElementById("individualMode")
+    .classList.toggle(
+        "hidden",
+        mode !== "individual"
+    );
 
 
-document
-.getElementById("groupMode")
-.classList.toggle(
-"hidden",
-mode !== "group"
-);
+    document
+    .getElementById("groupMode")
+    .classList.toggle(
+        "hidden",
+        mode !== "group"
+    );
 
 
-document
-.getElementById("individualModeBtn")
-.classList.toggle(
-"active",
-mode === "individual"
-);
+    document
+    .getElementById("individualModeBtn")
+    .classList.toggle(
+        "active",
+        mode === "individual"
+    );
 
 
-document
-.getElementById("groupModeBtn")
-.classList.toggle(
-"active",
-mode === "group"
-);
+    document
+    .getElementById("groupModeBtn")
+    .classList.toggle(
+        "active",
+        mode === "group"
+    );
 
 }
-
 
 
 /* =====================================================
@@ -895,103 +924,94 @@ mode === "group"
 
 function addIndividualMember(){
 
-let name =
-document
-.getElementById("individualName")
-.value
-.trim();
+    let name =
+    document
+    .getElementById("individualName")
+    .value
+    .trim();
 
 
-let phone =
-document
-.getElementById("individualPhone")
-.value
-.trim();
+    let phone =
+    document
+    .getElementById("individualPhone")
+    .value
+    .trim();
 
 
-if(!name){
+    if(!name){
 
-alert(
-"Please enter member name."
-);
+        alert("Please enter member name.");
 
-return;
+        return;
 
-}
+    }
 
 
-if(phone === ""){
+    if(phone === ""){
 
-alert(
-"Please enter WhatsApp number."
-);
+        alert("Please enter WhatsApp number.");
 
-return;
+        return;
 
-}
+    }
 
 
-phone =
-phone.replace(
-/[^0-9]/g,
-""
-);
+    phone =
+    phone.replace(
+        /[^0-9]/g,
+        ""
+    );
 
 
-if(phone.length < 10){
+    if(phone.length < 10){
 
-alert(
-"Please enter valid WhatsApp number."
-);
+        alert("Please enter valid WhatsApp number.");
 
-return;
+        return;
 
-}
+    }
 
 
-if(
-individualMembers.some(
-x =>
-x.name.toLowerCase() ===
-name.toLowerCase()
-)
-){
+    if(
+        individualMembers.some(
+            x =>
+            x.name.toLowerCase() ===
+            name.toLowerCase()
+        )
+    ){
 
-alert(
-"Member already exists."
-);
+        alert("Member already exists.");
 
-return;
+        return;
 
-}
+    }
 
 
-individualMembers.push({
+    individualMembers.push({
 
-name:name,
+        name:name,
 
-phone:phone
+        phone:phone
 
-});
-
-
-saveAll();
+    });
 
 
-document.getElementById(
-"individualName"
-).value = "";
+    saveAll();
 
 
-document.getElementById(
-"individualPhone"
-).value = "";
+    document.getElementById(
+        "individualName"
+    ).value = "";
 
 
-renderIndividual();
+    document.getElementById(
+        "individualPhone"
+    ).value = "";
+
+
+    renderIndividual();
 
 }
-
 
 
 /* =====================================================
@@ -1000,35 +1020,34 @@ renderIndividual();
 
 function deleteIndividualMember(name){
 
-let used =
-transactions.some(
-x => x.member === name
-);
+    let used =
+    transactions.some(
+        x => x.member === name
+    );
 
 
-if(used){
+    if(used){
 
-alert(
-"This member already has transactions. Delete transactions first."
-);
+        alert(
+            "This member already has transactions. Delete transactions first."
+        );
 
-return;
+        return;
+
+    }
+
+
+    individualMembers =
+    individualMembers.filter(
+        x => x.name !== name
+    );
+
+
+    saveAll();
+
+    renderIndividual();
 
 }
-
-
-individualMembers =
-individualMembers.filter(
-x => x.name !== name
-);
-
-
-saveAll();
-
-renderIndividual();
-
-}
-
 
 
 /* =====================================================
@@ -1037,115 +1056,117 @@ renderIndividual();
 
 function renderIndividual(){
 
-let list =
-document.getElementById(
-"individualMembers"
-);
+    let list =
+    document.getElementById(
+        "individualMembers"
+    );
 
 
-let select =
-document.getElementById(
-"individualMember"
-);
+    let select =
+    document.getElementById(
+        "individualMember"
+    );
 
 
-list.innerHTML = "";
+    list.innerHTML = "";
 
 
-select.innerHTML =
-`
-<option value="">
-Select member
-</option>
-`;
+    select.innerHTML =
+    `
+    <option value="">
+        Select member
+    </option>
+    `;
 
 
-if(
-individualMembers.length === 0
-){
+    if(
+        individualMembers.length === 0
+    ){
 
-list.innerHTML =
-`
-<div class="empty">
-No individual members yet.
-</div>
-`;
+        list.innerHTML =
+        `
+        <div class="empty">
+            No individual members yet.
+        </div>
+        `;
+
+    }
+
+    else{
+
+        individualMembers.forEach(
+            member => {
+
+                let div =
+                document.createElement(
+                    "div"
+                );
+
+
+                div.className =
+                "member";
+
+
+                div.innerHTML =
+                `
+                <div>
+
+                    <strong>
+                        👤 ${escapeHTML(member.name)}
+                    </strong>
+
+                    <div class="history-date">
+                        📱 ${escapeHTML(
+                            member.phone || ""
+                        )}
+                    </div>
+
+                </div>
+
+                <button
+                    class="danger small"
+                    onclick="deleteIndividualMember(
+                        '${escapeJS(member.name)}'
+                    )">
+
+                    Remove
+
+                </button>
+                `;
+
+
+                list.appendChild(div);
+
+
+                let option =
+                document.createElement(
+                    "option"
+                );
+
+
+                option.value =
+                member.name;
+
+
+                option.textContent =
+                member.name;
+
+
+                select.appendChild(
+                    option
+                );
+
+            }
+        );
+
+    }
+
+
+    renderIndividualBalances();
+
+    renderTransactionHistory();
 
 }
-else{
-
-individualMembers.forEach(
-member => {
-
-let div =
-document.createElement(
-"div"
-);
-
-
-div.className =
-"member";
-
-
-div.innerHTML =
-`
-<div>
-
-<strong>
-👤 ${escapeHTML(member.name)}
-</strong>
-
-<div class="history-date">
-📱 ${escapeHTML(
-member.phone || ""
-)}
-</div>
-
-</div>
-
-<button
-class="danger small"
-onclick="deleteIndividualMember(
-'${escapeJS(member.name)}'
-)"
->
-Remove
-</button>
-`;
-
-
-list.appendChild(div);
-
-
-let option =
-document.createElement(
-"option"
-);
-
-
-option.value =
-member.name;
-
-
-option.textContent =
-member.name;
-
-
-select.appendChild(
-option
-);
-
-});
-
-}
-
-
-renderIndividualBalances();
-
-renderTransactionHistory();
-
-}
-
 
 
 /* =====================================================
@@ -1154,48 +1175,48 @@ renderTransactionHistory();
 
 function getIndividualBalance(name){
 
-let balance = 0;
+    let balance = 0;
 
 
-transactions.forEach(
-transaction => {
+    transactions.forEach(
+        transaction => {
 
-if(
-transaction.member !== name
-)
-return;
+            if(
+                transaction.member !== name
+            )
+                return;
 
 
-if(
-transaction.type === "add"
-){
+            if(
+                transaction.type === "add"
+            ){
 
-balance +=
-Number(
-transaction.amount
-);
+                balance +=
+                Number(
+                    transaction.amount
+                );
+
+            }
+
+
+            if(
+                transaction.type === "spend"
+            ){
+
+                balance -=
+                Number(
+                    transaction.amount
+                );
+
+            }
+
+        }
+    );
+
+
+    return balance;
 
 }
-
-
-if(
-transaction.type === "spend"
-){
-
-balance -=
-Number(
-transaction.amount
-);
-
-}
-
-});
-
-
-return balance;
-
-}
-
 
 
 /* =====================================================
@@ -1204,110 +1225,101 @@ return balance;
 
 function renderIndividualBalances(){
 
-let container =
-document.getElementById(
-"individualBalances"
-);
+    let container =
+    document.getElementById(
+        "individualBalances"
+    );
 
 
-container.innerHTML = "";
+    container.innerHTML = "";
 
 
-if(
-individualMembers.length === 0
-){
+    if(
+        individualMembers.length === 0
+    ){
 
-container.innerHTML =
-`
-<div class="empty">
-Add members first.
-</div>
-`;
+        container.innerHTML =
+        `
+        <div class="empty">
+            Add members first.
+        </div>
+        `;
 
-return;
+        return;
 
-}
-
-
-individualMembers.forEach(
-member => {
-
-let balance =
-getIndividualBalance(
-member.name
-);
+    }
 
 
-let text =
-"₹0.00";
+    individualMembers.forEach(
+        member => {
+
+            let balance =
+            getIndividualBalance(
+                member.name
+            );
 
 
-let cls =
-"neutral";
+            let text =
+            "₹0.00";
 
 
-if(
-balance > 0
-){
-
-text =
-"+₹" +
-balance.toFixed(2);
-
-cls =
-"green";
-
-}
+            let cls =
+            "neutral";
 
 
-else if(
-balance < 0
-){
+            if(balance > 0){
 
-text =
-"-₹" +
-Math.abs(
-balance
-).toFixed(2);
+                text =
+                "+₹" +
+                balance.toFixed(2);
 
-cls =
-"red";
+                cls =
+                "green";
 
-}
+            }
 
+            else if(balance < 0){
 
-let div =
-document.createElement(
-"div"
-);
+                text =
+                "-₹" +
+                Math.abs(
+                    balance
+                ).toFixed(2);
 
+                cls =
+                "red";
 
-div.className =
-"balance";
-
-
-div.innerHTML =
-`
-<strong>
-👤 ${escapeHTML(
-member.name
-)}
-</strong>
-
-<span class="${cls} amount">
-${text}
-</span>
-`;
+            }
 
 
-container.appendChild(
-div
-);
+            let div =
+            document.createElement(
+                "div"
+            );
 
-});
+
+            div.className =
+            "balance";
+
+
+            div.innerHTML =
+            `
+            <strong>
+                👤 ${escapeHTML(member.name)}
+            </strong>
+
+            <span class="${cls} amount">
+                ${text}
+            </span>
+            `;
+
+
+            container.appendChild(div);
+
+        }
+    );
 
 }
-
 
 
 /* =====================================================
@@ -1316,139 +1328,130 @@ div
 
 function addTransaction(){
 
-let member =
-document
-.getElementById(
-"individualMember"
-)
-.value;
+    let member =
+    document
+    .getElementById(
+        "individualMember"
+    )
+    .value;
 
 
-let type =
-document
-.getElementById(
-"transactionType"
-)
-.value;
+    let type =
+    document
+    .getElementById(
+        "transactionType"
+    )
+    .value;
 
 
-let amount =
-Number(
-document
-.getElementById(
-"transactionAmount"
-)
-.value
-);
+    let amount =
+    Number(
+        document
+        .getElementById(
+            "transactionAmount"
+        )
+        .value
+    );
 
 
-let note =
-document
-.getElementById(
-"transactionNote"
-)
-.value
-.trim();
+    let note =
+    document
+    .getElementById(
+        "transactionNote"
+    )
+    .value
+    .trim();
 
 
-let date =
-document
-.getElementById(
-"transactionDate"
-)
-.value;
+    let date =
+    document
+    .getElementById(
+        "transactionDate"
+    )
+    .value;
 
 
-if(!member){
+    if(!member){
 
-alert(
-"Please select member."
-);
+        alert("Please select member.");
 
-return;
+        return;
 
-}
+    }
 
 
-if(
-!amount ||
-amount <= 0
-){
+    if(!amount || amount <= 0){
 
-alert(
-"Please enter valid amount."
-);
+        alert("Please enter valid amount.");
 
-return;
+        return;
 
-}
+    }
 
 
-if(!date){
+    if(!date){
 
-date =
-today();
+        date = today();
 
-}
-
-
-transactions.push({
-
-id:Date.now(),
-
-member:member,
-
-type:type,
-
-amount:amount,
-
-note:
-note ||
-(
-type === "add"
-?
-"Money Added"
-:
-"Money Spent"
-),
-
-date:date
-
-});
+    }
 
 
-saveAll();
+    transactions.push({
+
+        id:Date.now(),
+
+        member:member,
+
+        type:type,
+
+        amount:amount,
+
+        note:
+        note ||
+        (
+            type === "add"
+            ?
+            "Money Added"
+            :
+            "Money Spent"
+        ),
+
+        date:date
+
+    });
 
 
-document.getElementById(
-"transactionAmount"
-).value = "";
+    saveAll();
 
 
-document.getElementById(
-"transactionNote"
-).value = "";
+    document.getElementById(
+        "transactionAmount"
+    ).value = "";
 
 
-document.getElementById(
-"transactionDate"
-).value =
-today();
+    document.getElementById(
+        "transactionNote"
+    ).value = "";
 
 
-renderIndividual();
+    document.getElementById(
+        "transactionDate"
+    ).value =
+    today();
 
 
-alert(
-type === "add"
-?
-"Money added successfully!"
-:
-"Money spent successfully!"
-);
+    renderIndividual();
+
+
+    alert(
+        type === "add"
+        ?
+        "Money added successfully!"
+        :
+        "Money spent successfully!"
+    );
 
 }
-
 
 
 /* =====================================================
@@ -1456,35 +1459,126 @@ type === "add"
 ===================================================== */
 
 function filterTransactions(
-type,
-button
+    type,
+    button
 ){
 
-transactionFilter =
-type;
+    transactionFilter =
+    type;
 
 
-document
-.querySelectorAll(
-".tabs button"
-)
-.forEach(
-button =>
-button.classList.remove(
-"active"
-)
-);
+    document
+    .querySelectorAll(
+        ".tabs button"
+    )
+    .forEach(
+        button =>
+        button.classList.remove(
+            "active"
+        )
+    );
 
 
-button.classList.add(
-"active"
-);
+    button.classList.add(
+        "active"
+    );
 
 
-renderTransactionHistory();
+    renderTransactionHistory();
 
 }
 
+
+/* =====================================================
+   GET RUNNING BALANCE
+===================================================== */
+
+function getTransactionRunningBalance(
+    transactionId
+){
+
+    let list =
+    [...transactions]
+    .sort(
+        (a,b) => {
+
+            let dateCompare =
+            a.date.localeCompare(
+                b.date
+            );
+
+            if(dateCompare !== 0)
+                return dateCompare;
+
+            return (
+                Number(a.id) -
+                Number(b.id)
+            );
+
+        }
+    );
+
+
+    let target =
+    list.find(
+        x =>
+        Number(x.id) ===
+        Number(transactionId)
+    );
+
+
+    if(!target)
+        return 0;
+
+
+    let balance = 0;
+
+
+    for(let transaction of list){
+
+        if(
+            transaction.member !==
+            target.member
+        )
+            continue;
+
+
+        if(
+            transaction.type === "add"
+        ){
+
+            balance +=
+            Number(
+                transaction.amount
+            );
+
+        }
+
+        else{
+
+            balance -=
+            Number(
+                transaction.amount
+            );
+
+        }
+
+
+        if(
+            Number(transaction.id) ===
+            Number(transactionId)
+        ){
+
+            break;
+
+        }
+
+    }
+
+
+    return balance;
+
+}
 
 
 /* =====================================================
@@ -1493,242 +1587,261 @@ renderTransactionHistory();
 
 function renderTransactionHistory(){
 
-let container =
-document.getElementById(
-"transactionHistory"
-);
+    let container =
+    document.getElementById(
+        "transactionHistory"
+    );
 
 
-let list =
-[...transactions];
+    let list =
+    [...transactions];
 
 
-if(
-transactionFilter !== "all"
-){
+    if(
+        transactionFilter !== "all"
+    ){
 
-list =
-list.filter(
-x =>
-x.type ===
-transactionFilter
-);
+        list =
+        list.filter(
+            x =>
+            x.type ===
+            transactionFilter
+        );
+
+    }
+
+
+    list.sort(
+        (a,b) => {
+
+            let dateCompare =
+            b.date.localeCompare(
+                a.date
+            );
+
+            if(dateCompare !== 0)
+                return dateCompare;
+
+            return (
+                Number(b.id) -
+                Number(a.id)
+            );
+
+        }
+    );
+
+
+    container.innerHTML = "";
+
+
+    if(list.length === 0){
+
+        container.innerHTML =
+        `
+        <div class="empty">
+            No transactions found.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.forEach(
+        transaction => {
+
+            let div =
+            document.createElement(
+                "div"
+            );
+
+
+            div.className =
+            "transaction";
+
+
+            /* IMPORTANT:
+               এখন আর সব card-এ current balance দেখাবে না.
+               প্রতিটি transaction-এর পরে যে balance ছিল,
+               সেটাই দেখাবে.
+            */
+
+            let balance =
+            getTransactionRunningBalance(
+                transaction.id
+            );
+
+
+            let member =
+            individualMembers.find(
+                x =>
+                x.name ===
+                transaction.member
+            );
+
+
+            let phone =
+            member
+            ?
+            member.phone
+            :
+            "";
+
+
+            let typeText =
+            transaction.type === "add"
+            ?
+            "💵 Money Added"
+            :
+            "💸 Money Spent";
+
+
+            let color =
+            transaction.type === "add"
+            ?
+            "green"
+            :
+            "red";
+
+
+            let whatsappButton = "";
+
+
+            if(phone){
+
+                whatsappButton =
+                `
+                <button
+                    class="primary small"
+                    onclick="sendIndividualWhatsApp(
+                        '${escapeJS(phone)}',
+                        '${escapeJS(transaction.member)}',
+                        '${transaction.type}',
+                        ${Number(transaction.amount)},
+                        ${Number(balance)},
+                        '${escapeJS(transaction.note)}',
+                        '${escapeJS(transaction.date)}'
+                    )">
+
+                    📲 WhatsApp
+
+                </button>
+                `;
+
+            }
+
+
+            div.innerHTML =
+            `
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                gap:10px;
+            ">
+
+                <strong>
+                    👤 ${escapeHTML(
+                        transaction.member
+                    )}
+                </strong>
+
+                <strong class="${color}">
+
+                    ${
+                        transaction.type === "add"
+                        ? "+"
+                        : "-"
+                    }₹${
+                        Number(
+                            transaction.amount
+                        ).toFixed(2)
+                    }
+
+                </strong>
+
+            </div>
+
+
+            <div style="margin-top:5px">
+                ${typeText}
+            </div>
+
+
+            <div class="gray">
+                📝 ${escapeHTML(
+                    transaction.note
+                )}
+            </div>
+
+
+            <div class="history-date">
+                📅 ${formatDateDisplay(
+                    transaction.date
+                )}
+            </div>
+
+
+            <div style="margin-top:8px">
+
+                Balance after this transaction:
+
+                <strong
+                    class="${
+                        balance >= 0
+                        ?
+                        "green"
+                        :
+                        "red"
+                    }">
+
+                    ${
+                        balance >= 0
+                        ? "+"
+                        : "-"
+                    }₹${
+                        Math.abs(
+                            balance
+                        ).toFixed(2)
+                    }
+
+                </strong>
+
+            </div>
+
+
+            <div style="
+                margin-top:10px;
+                display:flex;
+                gap:8px;
+                flex-wrap:wrap;
+            ">
+
+                ${whatsappButton}
+
+
+                <button
+                    class="danger small"
+                    onclick="deleteTransaction(
+                        ${transaction.id}
+                    )">
+
+                    Delete
+
+                </button>
+
+            </div>
+
+            `;
+
+
+            container.appendChild(div);
+
+        }
+    );
 
 }
-
-
-list.sort(
-(a,b) =>
-b.date.localeCompare(
-a.date
-)
-);
-
-
-container.innerHTML = "";
-
-
-if(list.length === 0){
-
-container.innerHTML =
-`
-<div class="empty">
-No transactions found.
-</div>
-`;
-
-return;
-
-}
-
-
-list.forEach(
-transaction => {
-
-let div =
-document.createElement(
-"div"
-);
-
-
-div.className =
-"transaction";
-
-
-let balance =
-getIndividualBalance(
-transaction.member
-);
-
-
-let member =
-individualMembers.find(
-x =>
-x.name ===
-transaction.member
-);
-
-
-let phone =
-member
-?
-member.phone
-:
-"";
-
-
-let typeText =
-transaction.type === "add"
-?
-"💵 Money Added"
-:
-"💸 Money Spent";
-
-
-let color =
-transaction.type === "add"
-?
-"green"
-:
-"red";
-
-
-let whatsappButton =
-"";
-
-
-if(phone){
-
-whatsappButton =
-`
-<button
-class="primary small"
-onclick="sendIndividualWhatsApp(
-'${escapeJS(phone)}',
-'${escapeJS(
-transaction.member
-)}',
-'${transaction.type}',
-${Number(
-transaction.amount
-)},
-${Number(balance)},
-'${escapeJS(
-transaction.note
-)}',
-'${escapeJS(
-transaction.date
-)}'
-)"
->
-📲 WhatsApp
-</button>
-`;
-
-}
-
-
-div.innerHTML =
-`
-
-<div style="
-display:flex;
-justify-content:space-between;
-gap:10px;
-">
-
-<strong>
-👤 ${escapeHTML(
-transaction.member
-)}
-</strong>
-
-<strong class="${color}">
-${transaction.type === "add"
-? "+"
-: "-"
-}₹${Number(
-transaction.amount
-).toFixed(2)}
-</strong>
-
-</div>
-
-
-<div style="margin-top:5px">
-${typeText}
-</div>
-
-
-<div class="gray">
-📝 ${escapeHTML(
-transaction.note
-)}
-</div>
-
-
-<div class="history-date">
-📅 ${formatDateDisplay(
-transaction.date
-)}
-</div>
-
-
-<div style="margin-top:8px">
-
-Balance:
-
-<strong
-class="${
-balance >= 0
-?
-"green"
-:
-"red"
-}"
->
-
-${balance >= 0 ? "+" : "-"}₹${
-Math.abs(balance).toFixed(2)
-}
-
-</strong>
-
-</div>
-
-
-<div style="
-margin-top:10px;
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-">
-
-${whatsappButton}
-
-
-<button
-class="danger small"
-onclick="deleteTransaction(
-${transaction.id}
-)"
->
-Delete
-</button>
-
-</div>
-
-`;
-
-
-container.appendChild(
-div
-);
-
-});
-
-}
-
 
 
 /* =====================================================
@@ -1737,91 +1850,87 @@ div
 
 function sendIndividualWhatsApp(
 
-phone,
+    phone,
 
-memberName,
+    memberName,
 
-type,
+    type,
 
-amount,
+    amount,
 
-currentBalance,
+    currentBalance,
 
-note,
+    note,
 
-date
+    date
 
 ){
 
-let cleanPhone =
-String(phone).replace(
-/[^0-9]/g,
-""
-);
+    let cleanPhone =
+    String(phone).replace(
+        /[^0-9]/g,
+        ""
+    );
 
 
-if(
-cleanPhone.length < 10
-){
+    if(
+        cleanPhone.length < 10
+    ){
 
-alert(
-"Invalid WhatsApp number for " +
-memberName
-);
+        alert(
+            "Invalid WhatsApp number for " +
+            memberName
+        );
 
-return;
+        return;
 
-}
-
-
-let action =
-type === "add"
-?
-"Money Added"
-:
-"Money Spent";
+    }
 
 
-let sign =
-type === "add"
-?
-"+"
-:
-"-";
+    let action =
+    type === "add"
+    ?
+    "Money Added"
+    :
+    "Money Spent";
 
 
-let balanceMessage;
+    let sign =
+    type === "add"
+    ?
+    "+"
+    :
+    "-";
 
 
-if(
-currentBalance > 0
-){
-
-balanceMessage =
-`You have ₹${currentBalance.toFixed(2)} balance.`;
-
-}
-
-else if(
-currentBalance < 0
-){
-
-balanceMessage =
-`Your balance is -₹${Math.abs(
-currentBalance
-).toFixed(2)}.`;
-
-}
-
-else{
-
-balanceMessage =
-"Your balance is ₹0.00.";
-
-}
+    let balanceMessage;
 
 
-let message =
+    if(currentBalance > 0){
+
+        balanceMessage =
+        `You have ₹${currentBalance.toFixed(2)} balance.`;
+
+    }
+
+    else if(currentBalance < 0){
+
+        balanceMessage =
+        `Your balance is -₹${Math.abs(
+            currentBalance
+        ).toFixed(2)}.`;
+
+    }
+
+    else{
+
+        balanceMessage =
+        "Your balance is ₹0.00.";
+
+    }
+
+
+    let message =
 `💸 SplitMate
 
 Hi ${memberName},
@@ -1832,32 +1941,29 @@ amount
 
 Reason: ${note}
 
-Date: ${formatDateDisplay(
-date
-)}
+Date: ${formatDateDisplay(date)}
 
-Current Balance:
+Balance after this transaction:
 ${balanceMessage}
 
 — SplitMate`;
 
 
-let whatsappURL =
-"https://wa.me/" +
-cleanPhone +
-"?text=" +
-encodeURIComponent(
-message
-);
+    let whatsappURL =
+    "https://wa.me/" +
+    cleanPhone +
+    "?text=" +
+    encodeURIComponent(
+        message
+    );
 
 
-window.open(
-whatsappURL,
-"_blank"
-);
+    window.open(
+        whatsappURL,
+        "_blank"
+    );
 
 }
-
 
 
 /* =====================================================
@@ -1866,19 +1972,19 @@ whatsappURL,
 
 function deleteTransaction(id){
 
-transactions =
-transactions.filter(
-x =>
-x.id !== id
-);
+    transactions =
+    transactions.filter(
+        x =>
+        Number(x.id) !==
+        Number(id)
+    );
 
 
-saveAll();
+    saveAll();
 
-renderIndividual();
+    renderIndividual();
 
 }
-
 
 
 /* =====================================================
@@ -1887,106 +1993,95 @@ renderIndividual();
 
 function addMember(){
 
-let name =
-document
-.getElementById(
-"memberName"
-)
-.value
-.trim();
+    let name =
+    document
+    .getElementById("memberName")
+    .value
+    .trim();
 
 
-let phone =
-document
-.getElementById(
-"memberPhone"
-)
-.value
-.trim();
+    let phone =
+    document
+    .getElementById("memberPhone")
+    .value
+    .trim();
 
 
-if(!name){
+    if(!name){
 
-alert(
-"Please enter member name."
-);
+        alert("Please enter member name.");
 
-return;
+        return;
 
-}
+    }
 
 
-if(!phone){
+    if(!phone){
 
-alert(
-"Please enter WhatsApp number."
-);
+        alert(
+            "Please enter WhatsApp number."
+        );
 
-return;
+        return;
 
-}
-
-
-phone =
-phone.replace(
-/[^0-9]/g,
-""
-);
+    }
 
 
-if(
-phone.length < 10
-){
-
-alert(
-"Please enter valid WhatsApp number."
-);
-
-return;
-
-}
+    phone =
+    phone.replace(
+        /[^0-9]/g,
+        ""
+    );
 
 
-if(
-members.some(
-x =>
-x.toLowerCase() ===
-name.toLowerCase()
-)
-){
+    if(phone.length < 10){
 
-alert(
-"Member already exists."
-);
+        alert(
+            "Please enter valid WhatsApp number."
+        );
 
-return;
+        return;
 
-}
+    }
 
 
-members.push(name);
+    if(
+        members.some(
+            x =>
+            x.toLowerCase() ===
+            name.toLowerCase()
+        )
+    ){
 
-memberPhones[name] =
-phone;
+        alert("Member already exists.");
 
+        return;
 
-saveAll();
-
-
-document.getElementById(
-"memberName"
-).value = "";
-
-
-document.getElementById(
-"memberPhone"
-).value = "";
+    }
 
 
-renderGroup();
+    members.push(name);
+
+    memberPhones[name] =
+    phone;
+
+
+    saveAll();
+
+
+    document.getElementById(
+        "memberName"
+    ).value = "";
+
+
+    document.getElementById(
+        "memberPhone"
+    ).value = "";
+
+
+    renderGroup();
 
 }
-
 
 
 /* =====================================================
@@ -1995,81 +2090,82 @@ renderGroup();
 
 function renderGroup(){
 
-let list =
-document.getElementById(
-"memberList"
-);
+    let list =
+    document.getElementById(
+        "memberList"
+    );
 
 
-list.innerHTML = "";
+    list.innerHTML = "";
 
 
-if(
-members.length === 0
-){
+    if(
+        members.length === 0
+    ){
 
-list.innerHTML =
-`
-<div class="empty">
-No group members yet.
-</div>
-`;
+        list.innerHTML =
+        `
+        <div class="empty">
+            No group members yet.
+        </div>
+        `;
+
+    }
+
+
+    members.forEach(
+        (name,index) => {
+
+            let div =
+            document.createElement(
+                "div"
+            );
+
+
+            div.className =
+            "member";
+
+
+            div.innerHTML =
+            `
+            <div>
+
+                <strong>
+                    👤 ${escapeHTML(name)}
+                </strong>
+
+                <div class="history-date">
+                    📱 ${escapeHTML(
+                        memberPhones[name] || ""
+                    )}
+                </div>
+
+            </div>
+
+
+            <button
+                class="danger small"
+                onclick="removeMember(${index})">
+
+                Remove
+
+            </button>
+            `;
+
+
+            list.appendChild(div);
+
+        }
+    );
+
+
+    renderPeople();
+
+    renderGroupExpenses();
+
+    renderGroupBalance();
 
 }
-
-
-members.forEach(
-(name,index) => {
-
-let div =
-document.createElement(
-"div"
-);
-
-
-div.className =
-"member";
-
-
-div.innerHTML =
-`
-<div>
-
-<strong>
-👤 ${escapeHTML(name)}
-</strong>
-
-<div class="history-date">
-📱 ${escapeHTML(
-memberPhones[name] || ""
-)}
-</div>
-
-</div>
-
-
-<button
-class="danger small"
-onclick="removeMember(${index})"
->
-Remove
-</button>
-`;
-
-
-list.appendChild(div);
-
-});
-
-
-renderPeople();
-
-renderGroupExpenses();
-
-renderGroupBalance();
-
-}
-
 
 
 /* =====================================================
@@ -2078,47 +2174,46 @@ renderGroupBalance();
 
 function removeMember(index){
 
-let name =
-members[index];
+    let name =
+    members[index];
 
 
-let used =
-expenses.some(
-expense =>
-expense.payer === name ||
-expense.shares.some(
-share =>
-share.member === name
-)
-);
+    let used =
+    expenses.some(
+        expense =>
+        expense.payer === name ||
+        expense.shares.some(
+            share =>
+            share.member === name
+        )
+    );
 
 
-if(used){
+    if(used){
 
-alert(
-"This member is used in an expense. Delete that expense first."
-);
+        alert(
+            "This member is used in an expense. Delete that expense first."
+        );
 
-return;
+        return;
+
+    }
+
+
+    members.splice(
+        index,
+        1
+    );
+
+
+    delete memberPhones[name];
+
+
+    saveAll();
+
+    renderGroup();
 
 }
-
-
-members.splice(
-index,
-1
-);
-
-
-delete memberPhones[name];
-
-
-saveAll();
-
-renderGroup();
-
-}
-
 
 
 /* =====================================================
@@ -2127,54 +2222,45 @@ renderGroup();
 
 function chooseSplit(type){
 
-splitType =
-type;
+    splitType =
+    type;
 
 
-document
-.getElementById(
-"equalBtn"
-)
-.classList.toggle(
-"active",
-type === "equal"
-);
+    document
+    .getElementById("equalBtn")
+    .classList.toggle(
+        "active",
+        type === "equal"
+    );
 
 
-document
-.getElementById(
-"differentBtn"
-)
-.classList.toggle(
-"active",
-type === "different"
-);
+    document
+    .getElementById("differentBtn")
+    .classList.toggle(
+        "active",
+        type === "different"
+    );
 
 
-document
-.getElementById(
-"equalArea"
-)
-.classList.toggle(
-"hidden",
-type !== "equal"
-);
+    document
+    .getElementById("equalArea")
+    .classList.toggle(
+        "hidden",
+        type !== "equal"
+    );
 
 
-document
-.getElementById(
-"differentArea"
-)
-.classList.toggle(
-"hidden",
-type !== "different"
-);
+    document
+    .getElementById("differentArea")
+    .classList.toggle(
+        "hidden",
+        type !== "different"
+    );
 
 
-renderPeople();
+    renderPeople();
 
 }
-
 
 
 /* =====================================================
@@ -2183,179 +2269,188 @@ renderPeople();
 
 function renderPeople(){
 
-let equal =
-document.getElementById(
-"equalPeople"
-);
+    let equal =
+    document.getElementById(
+        "equalPeople"
+    );
 
 
-let different =
-document.getElementById(
-"differentPeople"
-);
+    let different =
+    document.getElementById(
+        "differentPeople"
+    );
 
 
-let payer =
-document.getElementById(
-"payer"
-);
+    let payer =
+    document.getElementById(
+        "payer"
+    );
 
 
-equal.innerHTML = "";
+    equal.innerHTML = "";
 
-different.innerHTML = "";
-
-
-payer.innerHTML =
-`
-<option value="">
-Select who paid
-</option>
-`;
+    different.innerHTML = "";
 
 
-members.forEach(
-(name,index) => {
+    payer.innerHTML =
+    `
+    <option value="">
+        Select who paid
+    </option>
+    `;
 
 
-let option =
-document.createElement(
-"option"
-);
+    members.forEach(
+        (name,index) => {
+
+            let option =
+            document.createElement(
+                "option"
+            );
 
 
-option.value =
-name;
+            option.value =
+            name;
 
 
-option.textContent =
-name;
+            option.textContent =
+            name;
 
 
-payer.appendChild(
-option
-);
+            payer.appendChild(
+                option
+            );
 
 
-/* EQUAL */
+            /* EQUAL */
 
-let row =
-document.createElement(
-"div"
-);
-
-
-row.className =
-"person-row";
+            let row =
+            document.createElement(
+                "div"
+            );
 
 
-row.innerHTML =
-`
-<label>
-
-<input
-type="checkbox"
-class="equalCheck"
-data-index="${index}"
-checked
-style="width:auto;margin-right:8px"
->
-
-👤 ${escapeHTML(name)}
-
-</label>
-`;
+            row.className =
+            "person-row";
 
 
-equal.appendChild(row);
+            row.innerHTML =
+            `
+            <label>
+
+                <input
+                    type="checkbox"
+                    class="equalCheck"
+                    data-index="${index}"
+                    checked
+                    style="
+                        width:auto;
+                        margin-right:8px
+                    "
+                >
+
+                👤 ${escapeHTML(name)}
+
+            </label>
+            `;
 
 
-/* DIFFERENT */
-
-let drow =
-document.createElement(
-"div"
-);
+            equal.appendChild(row);
 
 
-drow.className =
-"person-row";
+            /* DIFFERENT */
+
+            let drow =
+            document.createElement(
+                "div"
+            );
 
 
-drow.innerHTML =
-`
-
-<label>
-
-<input
-type="checkbox"
-class="differentCheck"
-data-index="${index}"
-style="width:auto;margin-right:8px"
->
-
-${escapeHTML(name)}
-
-</label>
+            drow.className =
+            "person-row";
 
 
-<input
-type="number"
-class="differentAmount amount-input"
-data-index="${index}"
-placeholder="₹ Amount"
-disabled
->
+            drow.innerHTML =
+            `
 
-`;
+            <label>
 
+                <input
+                    type="checkbox"
+                    class="differentCheck"
+                    data-index="${index}"
+                    style="
+                        width:auto;
+                        margin-right:8px
+                    "
+                >
 
-different.appendChild(
-drow
-);
+                ${escapeHTML(name)}
 
-
-let check =
-drow.querySelector(
-".differentCheck"
-);
+            </label>
 
 
-let amount =
-drow.querySelector(
-".differentAmount"
-);
+            <input
+                type="number"
+                class="differentAmount amount-input"
+                data-index="${index}"
+                placeholder="₹ Amount"
+                disabled
+            >
+
+            `;
 
 
-check.addEventListener(
-"change",
-function(){
-
-amount.disabled =
-!this.checked;
+            different.appendChild(
+                drow
+            );
 
 
-if(!this.checked){
+            let check =
+            drow.querySelector(
+                ".differentCheck"
+            );
 
-amount.value = "";
+
+            let amount =
+            drow.querySelector(
+                ".differentAmount"
+            );
+
+
+            check.addEventListener(
+                "change",
+                function(){
+
+                    amount.disabled =
+                    !this.checked;
+
+
+                    if(!this.checked){
+
+                        amount.value = "";
+
+                    }
+
+
+                    updateDifferentTotal();
+
+                }
+            );
+
+
+            amount.addEventListener(
+                "input",
+                updateDifferentTotal
+            );
+
+        }
+    );
+
+
+    updateDifferentTotal();
 
 }
-
-
-updateDifferentTotal();
-
-});
-
-
-amount.addEventListener(
-"input",
-updateDifferentTotal
-);
-
-});
-
-}
-
 
 
 /* =====================================================
@@ -2364,42 +2459,42 @@ updateDifferentTotal
 
 function updateDifferentTotal(){
 
-let total = 0;
+    let total = 0;
 
 
-document
-.querySelectorAll(
-".differentCheck:checked"
-)
-.forEach(
-check => {
+    document
+    .querySelectorAll(
+        ".differentCheck:checked"
+    )
+    .forEach(
+        check => {
 
-let index =
-check.dataset.index;
-
-
-let input =
-document.querySelector(
-`.differentAmount[data-index="${index}"]`
-);
+            let index =
+            check.dataset.index;
 
 
-total +=
-Number(
-input.value
-) || 0;
-
-});
+            let input =
+            document.querySelector(
+                `.differentAmount[data-index="${index}"]`
+            );
 
 
-document.getElementById(
-"differentTotal"
-).textContent =
-"Total: ₹" +
-total.toFixed(2);
+            total +=
+            Number(
+                input.value
+            ) || 0;
+
+        }
+    );
+
+
+    document.getElementById(
+        "differentTotal"
+    ).textContent =
+    "Total: ₹" +
+    total.toFixed(2);
 
 }
-
 
 
 /* =====================================================
@@ -2408,312 +2503,383 @@ total.toFixed(2);
 
 function addExpense(){
 
-if(
-members.length < 2
+    if(
+        members.length < 2
+    ){
+
+        alert(
+            "Please add at least 2 members."
+        );
+
+        return;
+
+    }
+
+
+    let name =
+    document
+    .getElementById(
+        "expenseName"
+    )
+    .value
+    .trim();
+
+
+    let date =
+    document
+    .getElementById(
+        "expenseDate"
+    )
+    .value;
+
+
+    let payer =
+    document
+    .getElementById(
+        "payer"
+    )
+    .value;
+
+
+    if(!name){
+
+        alert(
+            "Enter expense name."
+        );
+
+        return;
+
+    }
+
+
+    if(!date){
+
+        alert(
+            "Select expense date."
+        );
+
+        return;
+
+    }
+
+
+    if(!payer){
+
+        alert(
+            "Select who paid."
+        );
+
+        return;
+
+    }
+
+
+    let shares = [];
+
+    let total = 0;
+
+
+    /* EQUAL */
+
+    if(
+        splitType === "equal"
+    ){
+
+        let amount =
+        Number(
+            document
+            .getElementById(
+                "totalAmount"
+            )
+            .value
+        );
+
+
+        if(amount <= 0){
+
+            alert(
+                "Enter valid bill amount."
+            );
+
+            return;
+
+        }
+
+
+        let selected =
+        document.querySelectorAll(
+            ".equalCheck:checked"
+        );
+
+
+        if(
+            selected.length === 0
+        ){
+
+            alert(
+                "Select at least one person."
+            );
+
+            return;
+
+        }
+
+
+        let each =
+        amount /
+        selected.length;
+
+
+        selected.forEach(
+            check => {
+
+                let index =
+                Number(
+                    check.dataset.index
+                );
+
+
+                shares.push({
+
+                    member:
+                    members[index],
+
+                    amount:
+                    each,
+
+                    /* New expense = everyone unpaid
+                       except payer's own share is
+                       considered automatically paid */
+
+                    paid:
+                    members[index] === payer
+
+                });
+
+            }
+        );
+
+
+        total =
+        amount;
+
+    }
+
+
+    /* DIFFERENT */
+
+    else{
+
+        let selected =
+        document.querySelectorAll(
+            ".differentCheck:checked"
+        );
+
+
+        if(
+            selected.length === 0
+        ){
+
+            alert(
+                "Select at least one person."
+            );
+
+            return;
+
+        }
+
+
+        for(
+            let check of selected
+        ){
+
+            let index =
+            Number(
+                check.dataset.index
+            );
+
+
+            let input =
+            document.querySelector(
+                `.differentAmount[data-index="${index}"]`
+            );
+
+
+            let amount =
+            Number(
+                input.value
+            );
+
+
+            if(
+                !Number.isFinite(amount) ||
+                amount < 0
+            ){
+
+                alert(
+                    "Enter valid amount."
+                );
+
+                return;
+
+            }
+
+
+            shares.push({
+
+                member:
+                members[index],
+
+                amount:
+                amount,
+
+                paid:
+                members[index] === payer
+
+            });
+
+
+            total +=
+            amount;
+
+        }
+
+
+        if(total <= 0){
+
+            alert(
+                "Total must be greater than 0."
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    expenses.push({
+
+        id:
+        Date.now(),
+
+        name:
+        name,
+
+        date:
+        date,
+
+        payer:
+        payer,
+
+        amount:
+        total,
+
+        shares:
+        shares
+
+    });
+
+
+    saveAll();
+
+
+    document.getElementById(
+        "expenseName"
+    ).value = "";
+
+
+    document.getElementById(
+        "totalAmount"
+    ).value = "";
+
+
+    document.getElementById(
+        "payer"
+    ).value = "";
+
+
+    document.getElementById(
+        "expenseDate"
+    ).value =
+    today();
+
+
+    chooseSplit("equal");
+
+    renderGroup();
+
+
+    alert(
+        "Expense added successfully!"
+    );
+
+}
+
+
+/* =====================================================
+   TOGGLE PAID
+===================================================== */
+
+function toggleSharePaid(
+    expenseId,
+    memberName,
+    checked
 ){
 
-alert(
-"Please add at least 2 members."
-);
-
-return;
-
-}
-
-
-let name =
-document
-.getElementById(
-"expenseName"
-)
-.value
-.trim();
+    let expense =
+    expenses.find(
+        x =>
+        Number(x.id) ===
+        Number(expenseId)
+    );
 
 
-let date =
-document
-.getElementById(
-"expenseDate"
-)
-.value;
+    if(!expense)
+        return;
 
 
-let payer =
-document
-.getElementById(
-"payer"
-)
-.value;
+    let share =
+    expense.shares.find(
+        x =>
+        x.member ===
+        memberName
+    );
 
 
-if(!name){
-
-alert(
-"Enter expense name."
-);
-
-return;
-
-}
+    if(!share)
+        return;
 
 
-if(!date){
+    /* Payer's own share is always treated as paid */
 
-alert(
-"Select expense date."
-);
+    if(
+        memberName ===
+        expense.payer
+    ){
 
-return;
+        share.paid = true;
 
-}
+    }
+
+    else{
+
+        share.paid =
+        Boolean(checked);
+
+    }
 
 
-if(!payer){
+    saveAll();
 
-alert(
-"Select who paid."
-);
 
-return;
+    /* Immediately update everything */
+
+    renderGroupExpenses();
+
+    renderGroupBalance();
 
 }
-
-
-let shares = [];
-
-let total = 0;
-
-
-/* EQUAL */
-
-if(
-splitType === "equal"
-){
-
-let amount =
-Number(
-document
-.getElementById(
-"totalAmount"
-)
-.value
-);
-
-
-if(
-amount <= 0
-){
-
-alert(
-"Enter valid bill amount."
-);
-
-return;
-
-}
-
-
-let selected =
-document.querySelectorAll(
-".equalCheck:checked"
-);
-
-
-if(
-selected.length === 0
-){
-
-alert(
-"Select at least one person."
-);
-
-return;
-
-}
-
-
-let each =
-amount /
-selected.length;
-
-
-selected.forEach(
-check => {
-
-let index =
-Number(
-check.dataset.index
-);
-
-
-shares.push({
-
-member:
-members[index],
-
-amount:
-each
-
-});
-
-});
-
-
-total =
-amount;
-
-}
-
-
-/* DIFFERENT */
-
-else{
-
-let selected =
-document.querySelectorAll(
-".differentCheck:checked"
-);
-
-
-if(
-selected.length === 0
-){
-
-alert(
-"Select at least one person."
-);
-
-return;
-
-}
-
-
-for(
-let check of selected
-){
-
-let index =
-Number(
-check.dataset.index
-);
-
-
-let input =
-document.querySelector(
-`.differentAmount[data-index="${index}"]`
-);
-
-
-let amount =
-Number(
-input.value
-);
-
-
-if(
-!Number.isFinite(amount) ||
-amount < 0
-){
-
-alert(
-"Enter valid amount."
-);
-
-return;
-
-}
-
-
-shares.push({
-
-member:
-members[index],
-
-amount:
-amount
-
-});
-
-
-total +=
-amount;
-
-}
-
-
-if(
-total <= 0
-){
-
-alert(
-"Total must be greater than 0."
-);
-
-return;
-
-}
-
-}
-
-
-expenses.push({
-
-id:
-Date.now(),
-
-name:
-name,
-
-date:
-date,
-
-payer:
-payer,
-
-amount:
-total,
-
-shares:
-shares
-
-});
-
-
-saveAll();
-
-
-document.getElementById(
-"expenseName"
-).value = "";
-
-
-document.getElementById(
-"totalAmount"
-).value = "";
-
-
-document.getElementById(
-"payer"
-).value = "";
-
-
-document.getElementById(
-"expenseDate"
-).value =
-today();
-
-
-chooseSplit("equal");
-
-renderGroup();
-
-
-alert(
-"Expense added successfully!"
-);
-
-}
-
 
 
 /* =====================================================
@@ -2722,93 +2888,92 @@ alert(
 
 function getFilteredExpenses(){
 
-let search =
-document
-.getElementById(
-"groupSearch"
-)
-.value
-.toLowerCase()
-.trim();
+    let search =
+    document
+    .getElementById(
+        "groupSearch"
+    )
+    .value
+    .toLowerCase()
+    .trim();
 
 
-let from =
-document.getElementById(
-"groupFrom"
-).value;
+    let from =
+    document.getElementById(
+        "groupFrom"
+    ).value;
 
 
-let to =
-document.getElementById(
-"groupTo"
-).value;
+    let to =
+    document.getElementById(
+        "groupTo"
+    ).value;
 
 
-return expenses.filter(
-expense => {
+    return expenses
+    .filter(
+        expense => {
+
+            if(search){
+
+                let text =
+                expense.name +
+                " " +
+                expense.payer +
+                " " +
+                expense.shares
+                .map(
+                    x =>
+                    x.member
+                )
+                .join(" ");
 
 
-if(search){
+                if(
+                    !text
+                    .toLowerCase()
+                    .includes(search)
+                ){
 
-let text =
-expense.name +
-" " +
-expense.payer +
-" " +
-expense.shares
-.map(
-x =>
-x.member
-)
-.join(" ");
+                    return false;
+
+                }
+
+            }
 
 
-if(
-!text
-.toLowerCase()
-.includes(search)
-){
+            if(
+                from &&
+                expense.date < from
+            ){
 
-return false;
+                return false;
+
+            }
+
+
+            if(
+                to &&
+                expense.date > to
+            ){
+
+                return false;
+
+            }
+
+
+            return true;
+
+        }
+    )
+    .sort(
+        (a,b) =>
+        b.date.localeCompare(
+            a.date
+        )
+    );
 
 }
-
-}
-
-
-if(
-from &&
-expense.date < from
-){
-
-return false;
-
-}
-
-
-if(
-to &&
-expense.date > to
-){
-
-return false;
-
-}
-
-
-return true;
-
-}
-)
-.sort(
-(a,b) =>
-b.date.localeCompare(
-a.date
-)
-);
-
-}
-
 
 
 /* =====================================================
@@ -2817,187 +2982,275 @@ a.date
 
 function renderGroupExpenses(){
 
-let container =
-document.getElementById(
-"groupExpenses"
-);
+    let container =
+    document.getElementById(
+        "groupExpenses"
+    );
 
 
-let list =
-getFilteredExpenses();
+    let list =
+    getFilteredExpenses();
 
 
-container.innerHTML = "";
+    container.innerHTML = "";
 
 
-if(
-list.length === 0
-){
+    if(
+        list.length === 0
+    ){
 
-container.innerHTML =
-`
-<div class="empty">
-No expenses found.
-</div>
-`;
+        container.innerHTML =
+        `
+        <div class="empty">
+            No expenses found.
+        </div>
+        `;
 
-return;
+        return;
+
+    }
+
+
+    list.forEach(
+        expense => {
+
+            let div =
+            document.createElement(
+                "div"
+            );
+
+
+            div.className =
+            "expense";
+
+
+            let sharesHTML = "";
+
+
+            expense.shares.forEach(
+                share => {
+
+                    /* Old data support */
+
+                    if(
+                        typeof share.paid !==
+                        "boolean"
+                    ){
+
+                        share.paid = false;
+
+                    }
+
+
+                    if(
+                        share.member ===
+                        expense.payer
+                    ){
+
+                        share.paid = true;
+
+                    }
+
+
+                    let phone =
+                    memberPhones[
+                        share.member
+                    ];
+
+
+                    let whatsapp = "";
+
+
+                    if(phone){
+
+                        whatsapp =
+                        `
+                        <button
+                            class="primary small"
+                            onclick="sendWhatsApp(
+                                '${escapeJS(phone)}',
+                                '${escapeJS(share.member)}',
+                                ${Number(share.amount)},
+                                '${escapeJS(expense.name)}',
+                                ${Number(expense.amount)},
+                                '${escapeJS(expense.payer)}'
+                            )">
+
+                            📲 WhatsApp
+
+                        </button>
+                        `;
+
+                    }
+
+
+                    let paidHTML;
+
+
+                    if(
+                        share.member ===
+                        expense.payer
+                    ){
+
+                        paidHTML =
+                        `
+                        <span class="paid-text">
+                            ☑ Paid by payer
+                        </span>
+                        `;
+
+                    }
+
+                    else{
+
+                        paidHTML =
+                        `
+                        <label class="paid-box">
+
+                            <input
+                                type="checkbox"
+                                ${
+                                    share.paid
+                                    ?
+                                    "checked"
+                                    :
+                                    ""
+                                }
+                                onchange="
+                                    toggleSharePaid(
+                                        ${expense.id},
+                                        '${escapeJS(share.member)}',
+                                        this.checked
+                                    )
+                                "
+                            >
+
+                            ${
+                                share.paid
+                                ?
+                                "Paid ✅"
+                                :
+                                "Not Paid"
+                            }
+
+                        </label>
+                        `;
+
+                    }
+
+
+                    sharesHTML +=
+                    `
+                    <div class="breakdown-row">
+
+                        <span>
+                            👤 ${escapeHTML(
+                                share.member
+                            )}
+                        </span>
+
+
+                        <strong>
+                            ₹${Number(
+                                share.amount
+                            ).toFixed(2)}
+                        </strong>
+
+
+                        ${paidHTML}
+
+
+                        ${whatsapp}
+
+                    </div>
+                    `;
+
+                }
+            );
+
+
+            /* Save payer auto-paid changes */
+
+            saveAll();
+
+
+            div.innerHTML =
+            `
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                gap:10px;
+            ">
+
+                <strong>
+                    ${escapeHTML(
+                        expense.name
+                    )}
+                </strong>
+
+
+                <strong>
+                    ₹${Number(
+                        expense.amount
+                    ).toFixed(2)}
+                </strong>
+
+            </div>
+
+
+            <div class="history-date">
+                📅 ${formatDateDisplay(
+                    expense.date
+                )}
+            </div>
+
+
+            <div style="margin-top:8px">
+
+                💳 Paid by:
+
+                <strong>
+                    ${escapeHTML(
+                        expense.payer
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="breakdown">
+
+                <strong>
+                    👥 Individual Share
+                </strong>
+
+
+                ${sharesHTML}
+
+            </div>
+
+
+            <button
+                class="danger small"
+                style="margin-top:10px"
+                onclick="deleteExpense(
+                    ${expense.id}
+                )">
+
+                Delete
+
+            </button>
+
+            `;
+
+
+            container.appendChild(div);
+
+        }
+    );
 
 }
-
-
-list.forEach(
-expense => {
-
-let div =
-document.createElement(
-"div"
-);
-
-
-div.className =
-"expense";
-
-
-let sharesHTML = "";
-
-
-expense.shares.forEach(
-share => {
-
-let phone =
-memberPhones[
-share.member
-];
-
-
-let whatsapp = "";
-
-
-if(phone){
-
-whatsapp =
-`
-<button
-class="primary small"
-onclick="sendWhatsApp(
-'${escapeJS(phone)}',
-'${escapeJS(share.member)}',
-${Number(share.amount)},
-'${escapeJS(expense.name)}',
-${Number(expense.amount)},
-'${escapeJS(expense.payer)}'
-)"
->
-📲 WhatsApp
-</button>
-`;
-
-}
-
-
-sharesHTML +=
-`
-<div class="breakdown-row">
-
-<span>
-👤 ${escapeHTML(
-share.member
-)}
-</span>
-
-
-<strong>
-₹${Number(
-share.amount
-).toFixed(2)}
-</strong>
-
-
-${whatsapp}
-
-</div>
-`;
-
-});
-
-
-div.innerHTML =
-`
-
-<div style="
-display:flex;
-justify-content:space-between;
-gap:10px;
-">
-
-<strong>
-${escapeHTML(
-expense.name
-)}
-</strong>
-
-
-<strong>
-₹${Number(
-expense.amount
-).toFixed(2)}
-</strong>
-
-</div>
-
-
-<div class="history-date">
-📅 ${formatDateDisplay(
-expense.date
-)}
-</div>
-
-
-<div style="margin-top:8px">
-
-💳 Paid by:
-
-<strong>
-${escapeHTML(
-expense.payer
-)}
-</strong>
-
-</div>
-
-
-<div class="breakdown">
-
-<strong>
-👥 Individual Share
-</strong>
-
-${sharesHTML}
-
-</div>
-
-
-<button
-class="danger small"
-onclick="deleteExpense(
-${expense.id}
-)"
->
-Delete
-</button>
-
-`;
-
-
-container.appendChild(
-div
-);
-
-});
-
-}
-
 
 
 /* =====================================================
@@ -3006,19 +3259,19 @@ div
 
 function deleteExpense(id){
 
-expenses =
-expenses.filter(
-expense =>
-expense.id !== id
-);
+    expenses =
+    expenses.filter(
+        expense =>
+        Number(expense.id) !==
+        Number(id)
+    );
 
 
-saveAll();
+    saveAll();
 
-renderGroup();
+    renderGroup();
 
 }
-
 
 
 /* =====================================================
@@ -3027,45 +3280,112 @@ renderGroup();
 
 function calculateGroupBalances(){
 
-let balance = {};
+    let balance = {};
 
 
-members.forEach(
-name =>
-balance[name] = 0
-);
+    members.forEach(
+        name =>
+        balance[name] = 0
+    );
 
 
-expenses.forEach(
-expense => {
+    expenses.forEach(
+        expense => {
 
-balance[
-expense.payer
-] +=
-Number(
-expense.amount
-);
+            let payer =
+            expense.payer;
 
 
-expense.shares.forEach(
-share => {
-
-balance[
-share.member
-] -=
-Number(
-share.amount
-);
-
-});
-
-});
+            let total =
+            Number(
+                expense.amount
+            );
 
 
-return balance;
+            /*
+              Payer initially paid the entire bill.
+            */
+
+            balance[payer] += total;
+
+
+            expense.shares.forEach(
+                share => {
+
+                    let amount =
+                    Number(
+                        share.amount
+                    ) || 0;
+
+
+                    /*
+                      Payer's own share:
+                      this is their personal expense.
+                    */
+
+                    if(
+                        share.member ===
+                        payer
+                    ){
+
+                        balance[
+                            share.member
+                        ] -= amount;
+
+                        return;
+
+                    }
+
+
+                    /*
+                      NOT PAID:
+                      member still owes payer.
+                    */
+
+                    if(
+                        !share.paid
+                    ){
+
+                        balance[
+                            share.member
+                        ] -= amount;
+
+                    }
+
+
+                    /*
+                      PAID:
+                      member has already transferred
+                      money to payer.
+
+                      Therefore:
+                      member gets +amount
+                      payer gets -amount
+                    */
+
+                    else{
+
+                        balance[
+                            share.member
+                        ] += amount;
+
+
+                        balance[
+                            payer
+                        ] -= amount;
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    return balance;
 
 }
-
 
 
 /* =====================================================
@@ -3074,120 +3394,118 @@ return balance;
 
 function renderGroupBalance(){
 
-let container =
-document.getElementById(
-"groupBalance"
-);
+    let container =
+    document.getElementById(
+        "groupBalance"
+    );
 
 
-container.innerHTML = "";
+    container.innerHTML = "";
 
 
-if(
-members.length === 0
-){
+    if(
+        members.length === 0
+    ){
 
-container.innerHTML =
-`
-<div class="empty">
-Add members first.
-</div>
-`;
+        container.innerHTML =
+        `
+        <div class="empty">
+            Add members first.
+        </div>
+        `;
 
-renderSettlement({});
+        renderSettlement({});
 
-return;
+        return;
+
+    }
+
+
+    let balances =
+    calculateGroupBalances();
+
+
+    members.forEach(
+        name => {
+
+            let value =
+            balances[name];
+
+
+            let text =
+            "Settled";
+
+
+            let cls =
+            "neutral";
+
+
+            if(
+                value > 0.01
+            ){
+
+                text =
+                "Gets ₹" +
+                value.toFixed(2);
+
+                cls =
+                "get";
+
+            }
+
+
+            else if(
+                value < -0.01
+            ){
+
+                text =
+                "Pays ₹" +
+                Math.abs(
+                    value
+                ).toFixed(2);
+
+                cls =
+                "pay";
+
+            }
+
+
+            let div =
+            document.createElement(
+                "div"
+            );
+
+
+            div.className =
+            "balance";
+
+
+            div.innerHTML =
+            `
+
+            <strong>
+                👤 ${escapeHTML(name)}
+            </strong>
+
+
+            <span class="${cls}">
+                ${text}
+            </span>
+
+            `;
+
+
+            container.appendChild(div);
+
+        }
+    );
+
+
+    renderSettlement(
+        balances
+    );
 
 }
-
-
-let balances =
-calculateGroupBalances();
-
-
-members.forEach(
-name => {
-
-let value =
-balances[name];
-
-
-let text =
-"Settled";
-
-
-let cls =
-"neutral";
-
-
-if(
-value > 0.01
-){
-
-text =
-"Gets ₹" +
-value.toFixed(2);
-
-cls =
-"get";
-
-}
-
-
-else if(
-value < -0.01
-){
-
-text =
-"Pays ₹" +
-Math.abs(
-value
-).toFixed(2);
-
-cls =
-"pay";
-
-}
-
-
-let div =
-document.createElement(
-"div"
-);
-
-
-div.className =
-"balance";
-
-
-div.innerHTML =
-`
-
-<strong>
-${escapeHTML(name)}
-</strong>
-
-
-<span class="${cls}">
-${text}
-</span>
-
-`;
-
-
-container.appendChild(
-div
-);
-
-});
-
-
-renderSettlement(
-balances
-);
-
-}
-
 
 
 /* =====================================================
@@ -3195,187 +3513,188 @@ balances
 ===================================================== */
 
 function renderSettlement(
-balance
+    balance
 ){
 
-let container =
-document.getElementById(
-"settlement"
-);
+    let container =
+    document.getElementById(
+        "settlement"
+    );
 
 
-container.innerHTML = "";
+    container.innerHTML = "";
 
 
-let creditors = [];
+    let creditors = [];
 
-let debtors = [];
-
-
-members.forEach(
-name => {
-
-let value =
-balance[name] || 0;
+    let debtors = [];
 
 
-if(
-value > 0.01
-){
+    members.forEach(
+        name => {
 
-creditors.push({
+            let value =
+            balance[name] || 0;
 
-name:name,
 
-amount:value
+            if(
+                value > 0.01
+            ){
 
-});
+                creditors.push({
+
+                    name:name,
+
+                    amount:value
+
+                });
+
+            }
+
+
+            else if(
+                value < -0.01
+            ){
+
+                debtors.push({
+
+                    name:name,
+
+                    amount:
+                    Math.abs(value)
+
+                });
+
+            }
+
+        }
+    );
+
+
+    let d = 0;
+
+    let c = 0;
+
+    let result = [];
+
+
+    while(
+        d < debtors.length &&
+        c < creditors.length
+    ){
+
+        let amount =
+        Math.min(
+            debtors[d].amount,
+            creditors[c].amount
+        );
+
+
+        result.push({
+
+            from:
+            debtors[d].name,
+
+            to:
+            creditors[c].name,
+
+            amount:
+            amount
+
+        });
+
+
+        debtors[d].amount -=
+        amount;
+
+
+        creditors[c].amount -=
+        amount;
+
+
+        if(
+            debtors[d].amount <
+            0.01
+        ){
+
+            d++;
+
+        }
+
+
+        if(
+            creditors[c].amount <
+            0.01
+        ){
+
+            c++;
+
+        }
+
+    }
+
+
+    if(
+        result.length === 0
+    ){
+
+        container.innerHTML =
+        `
+        <div class="empty">
+            Everyone is settled 🎉
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    result.forEach(
+        item => {
+
+            let div =
+            document.createElement(
+                "div"
+            );
+
+
+            div.className =
+            "settlement";
+
+
+            div.innerHTML =
+            `
+
+            <strong>
+                ${escapeHTML(
+                    item.from
+                )}
+            </strong>
+
+            → must pay →
+
+            <strong>
+                ${escapeHTML(
+                    item.to
+                )}
+            </strong>
+
+            :
+
+            <strong>
+                ₹${item.amount.toFixed(2)}
+            </strong>
+
+            `;
+
+
+            container.appendChild(div);
+
+        }
+    );
 
 }
-
-
-else if(
-value < -0.01
-){
-
-debtors.push({
-
-name:name,
-
-amount:
-Math.abs(value)
-
-});
-
-}
-
-});
-
-
-let d = 0;
-
-let c = 0;
-
-let result = [];
-
-
-while(
-d < debtors.length &&
-c < creditors.length
-){
-
-let amount =
-Math.min(
-debtors[d].amount,
-creditors[c].amount
-);
-
-
-result.push({
-
-from:
-debtors[d].name,
-
-to:
-creditors[c].name,
-
-amount:
-amount
-
-});
-
-
-debtors[d].amount -=
-amount;
-
-
-creditors[c].amount -=
-amount;
-
-
-if(
-debtors[d].amount < 0.01
-){
-
-d++;
-
-}
-
-
-if(
-creditors[c].amount < 0.01
-){
-
-c++;
-
-}
-
-}
-
-
-if(
-result.length === 0
-){
-
-container.innerHTML =
-`
-<div class="empty">
-Everyone is settled 🎉
-</div>
-`;
-
-return;
-
-}
-
-
-result.forEach(
-item => {
-
-let div =
-document.createElement(
-"div"
-);
-
-
-div.className =
-"settlement";
-
-
-div.innerHTML =
-`
-
-<strong>
-${escapeHTML(
-item.from
-)}
-</strong>
-
-→ must pay →
-
-<strong>
-${escapeHTML(
-item.to
-)}
-</strong>
-
-:
-
-<strong>
-₹${item.amount.toFixed(2)}
-</strong>
-
-`;
-
-
-container.appendChild(
-div
-);
-
-});
-
-}
-
 
 
 /* =====================================================
@@ -3384,88 +3703,89 @@ div
 
 function sendWhatsApp(
 
-phone,
+    phone,
 
-memberName,
+    memberName,
 
-shareAmount,
+    shareAmount,
 
-expenseName,
+    expenseName,
 
-totalAmount,
+    totalAmount,
 
-payer
+    payer
 
 ){
 
-let cleanPhone =
-String(phone).replace(
-/[^0-9]/g,
-""
-);
+    let cleanPhone =
+    String(phone).replace(
+        /[^0-9]/g,
+        ""
+    );
 
 
-if(
-cleanPhone.length < 10
-){
+    if(
+        cleanPhone.length < 10
+    ){
 
-alert(
-"Invalid WhatsApp number for " +
-memberName
-);
+        alert(
+            "Invalid WhatsApp number for " +
+            memberName
+        );
 
-return;
+        return;
 
-}
-
-
-let share =
-Number(
-shareAmount
-);
+    }
 
 
-let total =
-Number(
-totalAmount
-);
+    let share =
+    Number(
+        shareAmount
+    );
 
 
-let paidBy =
-String(
-payer
-).trim();
+    let total =
+    Number(
+        totalAmount
+    );
 
 
-let settlementMessage;
+    let paidBy =
+    String(
+        payer
+    ).trim();
 
 
-if(
-memberName
-.trim()
-.toLowerCase()
-===
-paidBy
-.toLowerCase()
-){
-
-let receive =
-total - share;
+    let settlementMessage;
 
 
-settlementMessage =
-`You will receive ₹${receive.toFixed(2)}.`;
+    if(
+        memberName
+        .trim()
+        .toLowerCase()
+        ===
+        paidBy
+        .toLowerCase()
+    ){
 
-}
-else{
-
-settlementMessage =
-`You have to pay ₹${share.toFixed(2)} to ${paidBy}.`;
-
-}
+        let receive =
+        total - share;
 
 
-let message =
+        settlementMessage =
+        `You will receive ₹${receive.toFixed(2)}.`;
+
+    }
+
+    else{
+
+        settlementMessage =
+        `You have to pay ₹${share.toFixed(2)} to ${paidBy}.`;
+
+    }
+
+
+    let message =
 `💸 SplitMate Expense
 
 Hi ${memberName},
@@ -3482,22 +3802,21 @@ ${settlementMessage}
 — SplitMate`;
 
 
-let whatsappURL =
-"https://wa.me/" +
-cleanPhone +
-"?text=" +
-encodeURIComponent(
-message
-);
+    let whatsappURL =
+    "https://wa.me/" +
+    cleanPhone +
+    "?text=" +
+    encodeURIComponent(
+        message
+    );
 
 
-window.open(
-whatsappURL,
-"_blank"
-);
+    window.open(
+        whatsappURL,
+        "_blank"
+    );
 
 }
-
 
 
 /* =====================================================
@@ -3506,99 +3825,100 @@ whatsappURL,
 
 function today(){
 
-let date =
-new Date();
+    let date =
+    new Date();
 
 
-return (
-date.getFullYear() +
-"-" +
-String(
-date.getMonth()+1
-).padStart(2,"0") +
-"-" +
-String(
-date.getDate()
-).padStart(2,"0")
-);
+    return (
+        date.getFullYear() +
+        "-" +
+        String(
+            date.getMonth()+1
+        ).padStart(2,"0") +
+        "-" +
+        String(
+            date.getDate()
+        ).padStart(2,"0")
+    );
 
 }
 
 
 function formatDateDisplay(
-date
+    date
 ){
 
-if(!date)
-return "";
+    if(!date)
+        return "";
 
 
-let parts =
-date.split("-");
+    let parts =
+    date.split("-");
 
 
-if(parts.length !== 3)
-return date;
+    if(
+        parts.length !== 3
+    )
+        return date;
 
 
-return (
-parts[2] +
-"/" +
-parts[1] +
-"/" +
-parts[0]
-);
+    return (
+        parts[2] +
+        "/" +
+        parts[1] +
+        "/" +
+        parts[0]
+    );
 
 }
 
 
 function escapeHTML(
-text
+    text
 ){
 
-let div =
-document.createElement(
-"div"
-);
+    let div =
+    document.createElement(
+        "div"
+    );
 
 
-div.textContent =
-text;
+    div.textContent =
+    text;
 
 
-return div.innerHTML;
+    return div.innerHTML;
 
 }
 
 
 function escapeJS(
-text
+    text
 ){
 
-return String(text)
+    return String(text)
 
-.replace(
-/\\/g,
-"\\\\"
-)
+    .replace(
+        /\\/g,
+        "\\\\"
+    )
 
-.replace(
-/'/g,
-"\\'"
-)
+    .replace(
+        /'/g,
+        "\\'"
+    )
 
-.replace(
-/\n/g,
-"\\n"
-)
+    .replace(
+        /\n/g,
+        "\\n"
+    )
 
-.replace(
-/\r/g,
-"\\r"
-);
+    .replace(
+        /\r/g,
+        "\\r"
+    );
 
 }
-
 
 
 /* =====================================================
@@ -3606,13 +3926,13 @@ return String(text)
 ===================================================== */
 
 document.getElementById(
-"transactionDate"
+    "transactionDate"
 ).value =
 today();
 
 
 document.getElementById(
-"expenseDate"
+    "expenseDate"
 ).value =
 today();
 
@@ -3624,4 +3944,5 @@ renderGroup();
 </script>
 
 </body>
+
 </html>
