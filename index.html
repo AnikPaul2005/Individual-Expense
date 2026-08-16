@@ -197,6 +197,7 @@ button:hover{opacity:.9;}
 
 <div class="row">
 <button class="success" onclick="downloadPersonalStatementPDF()">📄 Download PDF</button>
+<button class="primary" onclick="openPersonalStatementPDF()">👁️ Open PDF</button>
 <button class="success" onclick="downloadPersonalStatementCSV()">📊 Download CSV</button>
 </div>
 
@@ -285,7 +286,10 @@ button:hover{opacity:.9;}
 <option value="spend">Money Spent</option>
 </select>
 
-<button class="success" style="width:100%;margin-bottom:10px" onclick="downloadStatementPDF()">⬇️ Download PDF</button>
+<div class="row">
+<button class="success" onclick="downloadStatementPDF()">📄 Download PDF</button>
+<button class="primary" onclick="openStatementPDF()">👁️ Open PDF</button>
+</div>
 
 <div id="individualStatement"></div>
 </div>
@@ -858,9 +862,32 @@ function downloadStatementPDF(){
         return;
     }
 
+    let doc = buildIndividualStatementDoc(data);
+    if(!doc) return;
+
+    doc.save("SplitMate-Statement-" + data.member.replace(/[^a-z0-9]/gi, "_") + "-" + today() + ".pdf");
+}
+
+function openStatementPDF(){
+    let data = computeIndividualStatementData();
+
+    if(!data){
+        alert("Please select a member first.");
+        return;
+    }
+
+    let doc = buildIndividualStatementDoc(data);
+    if(!doc) return;
+
+    openPdfInNewTab(doc);
+}
+
+/* Builds the Individual Statement PDF document (same layout/data used by
+   both Download PDF and Open PDF) without saving or opening it. */
+function buildIndividualStatementDoc(data){
     if(typeof window.jspdf === "undefined"){
         alert("PDF library could not be loaded (check your internet connection) - please try again.");
-        return;
+        return null;
     }
 
     let { jsPDF } = window.jspdf;
@@ -931,7 +958,23 @@ function downloadStatementPDF(){
         });
     }
 
-    doc.save("SplitMate-Statement-" + data.member.replace(/[^a-z0-9]/gi, "_") + "-" + today() + ".pdf");
+    return doc;
+}
+
+/* =====================================================
+   OPEN-IN-NEW-TAB HELPER (shared by Individual + Personal)
+===================================================== */
+function openPdfInNewTab(doc){
+    try {
+        let blobUrl = doc.output("bloburl");
+        let newTab = window.open(blobUrl, "_blank");
+
+        if(!newTab){
+            alert("Your browser blocked opening the PDF in a new tab. Please allow pop-ups for this site, or use Download PDF instead.");
+        }
+    } catch(err){
+        alert("Could not open the PDF preview. Please use Download PDF instead.");
+    }
 }
 
 /* =====================================================
@@ -1356,10 +1399,26 @@ function renderPersonalStatement(){
 /* ---------- PDF export ---------- */
 function downloadPersonalStatementPDF(){
     let data = computePersonalStatementData();
+    let doc = buildPersonalStatementDoc(data);
+    if(!doc) return;
 
+    doc.save("SplitMate-Personal-Statement-" + today() + ".pdf");
+}
+
+function openPersonalStatementPDF(){
+    let data = computePersonalStatementData();
+    let doc = buildPersonalStatementDoc(data);
+    if(!doc) return;
+
+    openPdfInNewTab(doc);
+}
+
+/* Builds the Personal Statement PDF document (same layout/data used by
+   both Download PDF and Open PDF) without saving or opening it. */
+function buildPersonalStatementDoc(data){
     if(typeof window.jspdf === "undefined"){
         alert("PDF library could not be loaded (check your internet connection) - please try again.");
-        return;
+        return null;
     }
 
     let { jsPDF } = window.jspdf;
@@ -1427,7 +1486,7 @@ function downloadPersonalStatementPDF(){
         });
     }
 
-    doc.save("SplitMate-Personal-Statement-" + today() + ".pdf");
+    return doc;
 }
 
 /* ---------- CSV export ---------- */
