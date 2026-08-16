@@ -76,9 +76,133 @@ button:hover{opacity:.9;}
 <!-- MODE -->
 <div class="card">
 <div class="mode">
-<button id="individualModeBtn" class="active" onclick="switchMode('individual')">👤 Individual Mode</button>
-<button id="groupModeBtn" onclick="switchMode('group')">👥 Group Mode</button>
+<button id="personalModeBtn" onclick="switchMode('personal')">👤 Personal</button>
+<button id="individualModeBtn" class="active" onclick="switchMode('individual')">👤 Individual</button>
+<button id="groupModeBtn" onclick="switchMode('group')">👥 Group</button>
 </div>
+</div>
+
+<!-- =====================================================
+     PERSONAL MODE
+====================================================== -->
+<div id="personalMode" class="hidden">
+
+<div class="card">
+<div class="title">👤 Personal Dashboard</div>
+<div class="balance">
+<span>💰 Total Income</span>
+<strong class="green" id="personalTotalIncome">+₹0.00</strong>
+</div>
+<div class="balance">
+<span>💸 Total Spent</span>
+<strong class="red" id="personalTotalSpent">-₹0.00</strong>
+</div>
+<div class="balance">
+<span>💵 Remaining Balance</span>
+<strong class="green" id="personalRemainingBalance">+₹0.00</strong>
+</div>
+</div>
+
+<div class="card">
+<div class="title">📱 WhatsApp Number (for Personal Alerts)</div>
+<div class="row">
+<input id="personalPhoneInput" type="tel" placeholder="Your WhatsApp number">
+<button class="primary" onclick="savePersonalPhoneNumber()">💾 Save</button>
+</div>
+</div>
+
+<div class="card">
+<div class="title">💰 Add Personal Transaction</div>
+<select id="personalType">
+<option value="income">💰 Income</option>
+<option value="expense">💸 Expense</option>
+</select>
+
+<input id="personalAmount" type="number" min="0" placeholder="Amount">
+
+<select id="personalCategory" onchange="togglePersonalCustomCategory()">
+<option value="🍔 Food">🍔 Food</option>
+<option value="🚌 Transport">🚌 Transport</option>
+<option value="🛍 Shopping">🛍 Shopping</option>
+<option value="🎮 Entertainment">🎮 Entertainment</option>
+<option value="📚 Education">📚 Education</option>
+<option value="🏠 Rent/Bills">🏠 Rent/Bills</option>
+<option value="💊 Health">💊 Health</option>
+<option value="📱 Recharge">📱 Recharge</option>
+<option value="✈️ Travel">✈️ Travel</option>
+<option value="💼 Work">💼 Work</option>
+<option value="📦 Other">📦 Other</option>
+<option value="custom">➕ Custom Category</option>
+</select>
+<input id="personalCustomCategory" type="text" placeholder="Enter custom category" class="hidden">
+
+<input id="personalNote" type="text" placeholder="Note (optional)">
+
+<div style="font-weight:bold;margin:5px 0 8px">📅 Date</div>
+<input id="personalDate" type="date">
+
+<button id="addPersonalBtn" class="primary" style="width:100%" onclick="submitPersonalForm()">+ Add Transaction</button>
+<button id="cancelPersonalEditBtn" class="danger small hidden" style="width:100%;margin-top:8px" onclick="cancelEditPersonal()">✖ Cancel Edit</button>
+</div>
+
+<div class="card">
+<div class="title">🔍 Filters</div>
+<div class="tabs" id="personalTypeTabs">
+<button class="active" onclick="filterPersonalType('all',this)">All</button>
+<button onclick="filterPersonalType('income',this)">Income</button>
+<button onclick="filterPersonalType('expense',this)">Expense</button>
+</div>
+
+<select id="personalPreset" onchange="applyPreset(this.value,'personalFrom','personalTo',renderPersonal)">
+<option value="all" selected>All Time</option>
+<option value="today">Today</option>
+<option value="thisWeek">This Week</option>
+<option value="thisMonth">This Month</option>
+<option value="lastMonth">Last Month</option>
+<option value="thisYear">This Year</option>
+<option value="custom">Custom Range</option>
+</select>
+
+<div class="filter-row">
+<input type="date" id="personalFrom" onchange="renderPersonal()">
+<input type="date" id="personalTo" onchange="renderPersonal()">
+</div>
+</div>
+
+<div class="card">
+<div class="title">📋 Personal Transaction History</div>
+<div id="personalHistory"></div>
+</div>
+
+<div class="card">
+<div class="title">📂 Category Summary</div>
+<div id="personalCategorySummary"></div>
+</div>
+
+<div class="card">
+<div class="title">📊 Personal Statement</div>
+
+<select id="personalStmtPreset" onchange="applyPreset(this.value,'personalStmtFrom','personalStmtTo',renderPersonalStatement)">
+<option value="all" selected>All Time</option>
+<option value="thisMonth">This Month</option>
+<option value="lastMonth">Last Month</option>
+<option value="thisYear">This Year</option>
+<option value="custom">Custom Range</option>
+</select>
+
+<div class="filter-row">
+<input type="date" id="personalStmtFrom" onchange="renderPersonalStatement()">
+<input type="date" id="personalStmtTo" onchange="renderPersonalStatement()">
+</div>
+
+<div class="row">
+<button class="success" onclick="downloadPersonalStatementPDF()">📄 Download PDF</button>
+<button class="success" onclick="downloadPersonalStatementCSV()">📊 Download CSV</button>
+</div>
+
+<div id="personalStatement"></div>
+</div>
+
 </div>
 
 <!-- =====================================================
@@ -130,7 +254,7 @@ button:hover{opacity:.9;}
 <input type="date" id="txnTo" onchange="renderTransactionHistory()">
 </div>
 
-<div class="tabs">
+<div class="tabs" id="individualTypeTabs">
 <button class="active" onclick="filterTransactions('all',this)">All</button>
 <button onclick="filterTransactions('add',this)">Money Added</button>
 <button onclick="filterTransactions('spend',this)">Spent</button>
@@ -279,9 +403,15 @@ let expenses = JSON.parse(localStorage.getItem("sm_expenses") || "[]");
 let individualMembers = JSON.parse(localStorage.getItem("sm_individual_members") || "[]");
 let transactions = JSON.parse(localStorage.getItem("sm_transactions") || "[]");
 
+/* Personal Mode data - fully separate keys, never mixed with the above */
+let personalTransactions = JSON.parse(localStorage.getItem("sm_personal_transactions") || "[]");
+let personalPhone = localStorage.getItem("sm_personal_phone") || "";
+
 let splitType = "equal";
 let transactionFilter = "all";
+let personalTypeFilter = "all";
 let editingExpenseId = null;
+let editingPersonalId = null;
 
 /* =====================================================
    FIX OLD DATA (normalize, never destroy)
@@ -295,6 +425,12 @@ expenses.forEach(expense => {
     if(typeof expense.amount !== "number") expense.amount = Number(expense.amount) || 0;
 });
 
+personalTransactions.forEach(t => {
+    if(typeof t.amount !== "number") t.amount = Number(t.amount) || 0;
+    if(t.type !== "income" && t.type !== "expense") t.type = "expense";
+    if(!t.category) t.category = "📦 Other";
+});
+
 /* =====================================================
    STORAGE
 ===================================================== */
@@ -304,14 +440,18 @@ function saveAll(){
     localStorage.setItem("sm_expenses", JSON.stringify(expenses));
     localStorage.setItem("sm_individual_members", JSON.stringify(individualMembers));
     localStorage.setItem("sm_transactions", JSON.stringify(transactions));
+    localStorage.setItem("sm_personal_transactions", JSON.stringify(personalTransactions));
+    localStorage.setItem("sm_personal_phone", personalPhone);
 }
 
 /* =====================================================
    MODE
 ===================================================== */
 function switchMode(mode){
+    document.getElementById("personalMode").classList.toggle("hidden", mode !== "personal");
     document.getElementById("individualMode").classList.toggle("hidden", mode !== "individual");
     document.getElementById("groupMode").classList.toggle("hidden", mode !== "group");
+    document.getElementById("personalModeBtn").classList.toggle("active", mode === "personal");
     document.getElementById("individualModeBtn").classList.toggle("active", mode === "individual");
     document.getElementById("groupModeBtn").classList.toggle("active", mode === "group");
 }
@@ -321,9 +461,20 @@ function switchMode(mode){
 ===================================================== */
 function getDatePresetRange(preset){
     let now = new Date();
-    let y = now.getFullYear(), m = now.getMonth();
-    function fmt(d){
-        return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    let y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+    function fmt(dt){
+        return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2,"0") + "-" + String(dt.getDate()).padStart(2,"0");
+    }
+    if(preset === "today"){
+        let t = fmt(now);
+        return [t, t];
+    }
+    if(preset === "thisWeek"){
+        let day = now.getDay();
+        let diffToMonday = (day === 0 ? 6 : day - 1);
+        let start = new Date(y, m, d - diffToMonday);
+        let end = new Date(y, m, d - diffToMonday + 6);
+        return [fmt(start), fmt(end)];
     }
     if(preset === "thisMonth") return [fmt(new Date(y,m,1)), fmt(new Date(y,m+1,0))];
     if(preset === "lastMonth") return [fmt(new Date(y,m-1,1)), fmt(new Date(y,m,0))];
@@ -509,7 +660,7 @@ function addTransaction(){
 ===================================================== */
 function filterTransactions(type, button){
     transactionFilter = type;
-    document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll("#individualTypeTabs button").forEach(b => b.classList.remove("active"));
     button.classList.add("active");
     renderTransactionHistory();
 }
@@ -784,6 +935,32 @@ function downloadStatementPDF(){
 }
 
 /* =====================================================
+   SHARED WHATSAPP MESSAGE BUILDER
+   Exact format used by both Individual Mode and Personal Mode:
+
+   *SplitMate 💸*
+   Money Added: ₹[amount]
+   Reason: [note]
+   Date: [date]
+
+   Current Balance: ₹[balance]
+
+   — Verified by Anik
+===================================================== */
+function formatSignedRupee(v){
+    return (Number(v) < 0 ? "-₹" : "₹") + Math.abs(Number(v)).toFixed(2);
+}
+
+function buildSplitMateMessage(actionLabel, amount, note, date, balanceLabel, balance){
+    return "*SplitMate 💸*\n" +
+        actionLabel + ": ₹" + Number(amount).toFixed(2) + "\n" +
+        "Reason: " + (note || "-") + "\n" +
+        "Date: " + formatDateDisplay(date) + "\n\n" +
+        balanceLabel + ": " + formatSignedRupee(balance) + "\n\n" +
+        "— Verified by Anik";
+}
+
+/* =====================================================
    INDIVIDUAL WHATSAPP
 ===================================================== */
 function sendIndividualWhatsApp(phone, memberName, type, amount, currentBalance, note, date){
@@ -793,28 +970,10 @@ function sendIndividualWhatsApp(phone, memberName, type, amount, currentBalance,
         return;
     }
 
-    let action = type === "add" ? "Money Added" : "Money Spent";
+    let actionLabel = type === "add" ? "Money Added" : "Money Spent";
+    let balanceLabel = type === "add" ? "Current Balance" : "Remaining Balance";
 
-    let balanceMessage;
-    if(currentBalance > 0) balanceMessage = `You have ₹${currentBalance.toFixed(2)} balance.`;
-    else if(currentBalance < 0) balanceMessage = `Your balance is -₹${Math.abs(currentBalance).toFixed(2)}.`;
-    else balanceMessage = "Your balance is ₹0.00.";
-
-    let message =
-`💸 SplitMate
-
-Hi ${memberName},
-
-${action}: ₹${Number(amount).toFixed(2)}
-
-Reason: ${note}
-
-Date: ${formatDateDisplay(date)}
-
-Balance after this transaction:
-${balanceMessage}
-
-— SplitMate`;
+    let message = buildSplitMateMessage(actionLabel, amount, note, date, balanceLabel, currentBalance);
 
     let whatsappURL = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(message);
     window.open(whatsappURL, "_blank");
@@ -827,6 +986,486 @@ function deleteTransaction(id){
     transactions = transactions.filter(x => Number(x.id) !== Number(id));
     saveAll();
     renderIndividual();
+}
+
+/* =====================================================================
+   PERSONAL MODE
+   Fully independent from Individual Mode and Group Mode - separate
+   localStorage keys (sm_personal_transactions, sm_personal_phone),
+   never touches members/expenses/transactions/balances above.
+===================================================================== */
+
+const PERSONAL_PRESET_CATEGORIES = ["🍔 Food","🚌 Transport","🛍 Shopping","🎮 Entertainment","📚 Education","🏠 Rent/Bills","💊 Health","📱 Recharge","✈️ Travel","💼 Work","📦 Other"];
+
+/* ---------- filters ---------- */
+function filterPersonalType(type, button){
+    personalTypeFilter = type;
+    document.querySelectorAll("#personalTypeTabs button").forEach(b => b.classList.remove("active"));
+    button.classList.add("active");
+    renderPersonal();
+}
+
+function getFilteredPersonalTransactions(){
+    let from = document.getElementById("personalFrom").value;
+    let to = document.getElementById("personalTo").value;
+
+    let list = [...personalTransactions];
+    if(personalTypeFilter !== "all") list = list.filter(t => t.type === personalTypeFilter);
+    if(from) list = list.filter(t => t.date >= from);
+    if(to) list = list.filter(t => t.date <= to);
+    return list;
+}
+
+/* ---------- running balance (true lifetime balance, same convention as Individual Mode) ---------- */
+function getPersonalRunningBalance(transactionId){
+    let list = [...personalTransactions].sort((a,b) => {
+        let c = a.date.localeCompare(b.date);
+        if(c !== 0) return c;
+        return Number(a.id) - Number(b.id);
+    });
+
+    let target = list.find(x => Number(x.id) === Number(transactionId));
+    if(!target) return 0;
+
+    let balance = 0;
+    for(let t of list){
+        balance += t.type === "income" ? Number(t.amount) : -Number(t.amount);
+        if(Number(t.id) === Number(transactionId)) break;
+    }
+    return balance;
+}
+
+/* ---------- master render ---------- */
+function renderPersonal(){
+    if(!document.getElementById("personalMode")) return;
+    renderPersonalDashboard();
+    renderPersonalHistory();
+    renderPersonalCategorySummary();
+    renderPersonalStatement();
+}
+
+function renderPersonalDashboard(){
+    let list = getFilteredPersonalTransactions();
+    let income = 0, spent = 0;
+
+    list.forEach(t => {
+        if(t.type === "income") income += Number(t.amount);
+        else spent += Number(t.amount);
+    });
+
+    let remaining = income - spent;
+
+    document.getElementById("personalTotalIncome").textContent = "+₹" + income.toFixed(2);
+    document.getElementById("personalTotalSpent").textContent = "-₹" + spent.toFixed(2);
+
+    let remainingEl = document.getElementById("personalRemainingBalance");
+    remainingEl.textContent = (remaining >= 0 ? "+₹" : "-₹") + Math.abs(remaining).toFixed(2);
+    remainingEl.className = remaining >= 0 ? "green" : "red";
+}
+
+function renderPersonalHistory(){
+    let container = document.getElementById("personalHistory");
+    let list = getFilteredPersonalTransactions();
+
+    list.sort((a,b) => {
+        let c = b.date.localeCompare(a.date);
+        if(c !== 0) return c;
+        return Number(b.id) - Number(a.id);
+    });
+
+    container.innerHTML = "";
+
+    if(list.length === 0){
+        container.innerHTML = `<div class="empty">No personal transactions found.</div>`;
+        return;
+    }
+
+    list.forEach(t => {
+        let balance = getPersonalRunningBalance(t.id);
+        let div = document.createElement("div");
+        div.className = "transaction";
+
+        let typeLabel = t.type === "income" ? "💰 Income" : "💸 Expense";
+        let color = t.type === "income" ? "green" : "red";
+
+        let whatsappButton = "";
+        if(personalPhone){
+            whatsappButton = `<button class="primary small" onclick="sendPersonalWhatsApp(${t.id})">📲 WhatsApp</button>`;
+        }
+
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;gap:10px;">
+                <strong>${escapeHTML(t.category)}</strong>
+                <strong class="${color}">${t.type === "income" ? "+" : "-"}₹${Number(t.amount).toFixed(2)}</strong>
+            </div>
+            <div style="margin-top:5px">${typeLabel}</div>
+            ${t.note ? `<div class="gray">📝 ${escapeHTML(t.note)}</div>` : ""}
+            <div class="history-date">📅 ${formatDateDisplay(t.date)}</div>
+            <div style="margin-top:8px">
+                Balance:
+                <strong class="${balance >= 0 ? "green" : "red"}">${balance >= 0 ? "+" : "-"}₹${Math.abs(balance).toFixed(2)}</strong>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                ${whatsappButton}
+                <button class="primary small" onclick="editPersonalTransaction(${t.id})">✏️ Edit</button>
+                <button class="danger small" onclick="deletePersonalTransaction(${t.id})">Delete</button>
+            </div>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+function renderPersonalCategorySummary(){
+    let container = document.getElementById("personalCategorySummary");
+    let list = getFilteredPersonalTransactions().filter(t => t.type === "expense");
+
+    let totals = {};
+    list.forEach(t => {
+        totals[t.category] = (totals[t.category] || 0) + Number(t.amount);
+    });
+
+    let entries = Object.entries(totals).sort((a,b) => b[1] - a[1]);
+
+    if(entries.length === 0){
+        container.innerHTML = `<div class="empty">No expenses in this range.</div>`;
+        return;
+    }
+
+    container.innerHTML = `<div class="breakdown">` + entries.map(([cat, amt]) => `
+        <div class="breakdown-row">
+            <span>${escapeHTML(cat)}</span>
+            <strong class="red">₹${amt.toFixed(2)}</strong>
+        </div>
+    `).join("") + `</div>`;
+}
+
+/* ---------- category picker ---------- */
+function togglePersonalCustomCategory(){
+    let sel = document.getElementById("personalCategory").value;
+    document.getElementById("personalCustomCategory").classList.toggle("hidden", sel !== "custom");
+}
+
+function getPersonalCategoryValue(){
+    let sel = document.getElementById("personalCategory").value;
+    if(sel === "custom") return document.getElementById("personalCustomCategory").value.trim();
+    return sel;
+}
+
+/* ---------- add / edit / delete ---------- */
+function submitPersonalForm(){
+    if(editingPersonalId) updatePersonalTransactionSave();
+    else addPersonalTransaction();
+}
+
+function addPersonalTransaction(){
+    let type = document.getElementById("personalType").value;
+    let amount = Number(document.getElementById("personalAmount").value);
+    let category = getPersonalCategoryValue();
+    let note = document.getElementById("personalNote").value.trim();
+    let date = document.getElementById("personalDate").value;
+
+    if(!amount || amount <= 0){ alert("Please enter a valid amount."); return; }
+    if(!category){ alert("Please select or enter a category."); return; }
+    if(!date){ alert("Please select a date."); return; }
+
+    personalTransactions.push({ id: Date.now(), type, amount, category, note, date });
+    saveAll();
+
+    resetPersonalForm();
+    renderPersonal();
+    alert(type === "income" ? "Income added successfully!" : "Expense added successfully!");
+}
+
+function editPersonalTransaction(id){
+    let t = personalTransactions.find(x => Number(x.id) === Number(id));
+    if(!t) return;
+
+    editingPersonalId = id;
+
+    document.getElementById("personalType").value = t.type;
+    document.getElementById("personalAmount").value = t.amount;
+    document.getElementById("personalNote").value = t.note || "";
+    document.getElementById("personalDate").value = t.date;
+
+    if(PERSONAL_PRESET_CATEGORIES.includes(t.category)){
+        document.getElementById("personalCategory").value = t.category;
+        document.getElementById("personalCustomCategory").classList.add("hidden");
+        document.getElementById("personalCustomCategory").value = "";
+    } else {
+        document.getElementById("personalCategory").value = "custom";
+        document.getElementById("personalCustomCategory").value = t.category;
+        document.getElementById("personalCustomCategory").classList.remove("hidden");
+    }
+
+    document.getElementById("addPersonalBtn").textContent = "💾 Update Transaction";
+    document.getElementById("cancelPersonalEditBtn").classList.remove("hidden");
+
+    document.getElementById("personalType").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function updatePersonalTransactionSave(){
+    let t = personalTransactions.find(x => Number(x.id) === Number(editingPersonalId));
+    if(!t){ editingPersonalId = null; resetPersonalForm(); return; }
+
+    let type = document.getElementById("personalType").value;
+    let amount = Number(document.getElementById("personalAmount").value);
+    let category = getPersonalCategoryValue();
+    let note = document.getElementById("personalNote").value.trim();
+    let date = document.getElementById("personalDate").value;
+
+    if(!amount || amount <= 0){ alert("Please enter a valid amount."); return; }
+    if(!category){ alert("Please select or enter a category."); return; }
+    if(!date){ alert("Please select a date."); return; }
+
+    t.type = type;
+    t.amount = amount;
+    t.category = category;
+    t.note = note;
+    t.date = date;
+
+    saveAll();
+    editingPersonalId = null;
+    resetPersonalForm();
+    renderPersonal();
+    alert("Transaction updated successfully!");
+}
+
+function cancelEditPersonal(){
+    editingPersonalId = null;
+    resetPersonalForm();
+}
+
+function resetPersonalForm(){
+    document.getElementById("personalAmount").value = "";
+    document.getElementById("personalCategory").value = "🍔 Food";
+    document.getElementById("personalCustomCategory").value = "";
+    document.getElementById("personalCustomCategory").classList.add("hidden");
+    document.getElementById("personalNote").value = "";
+    document.getElementById("personalDate").value = today();
+    document.getElementById("addPersonalBtn").textContent = "+ Add Transaction";
+    document.getElementById("cancelPersonalEditBtn").classList.add("hidden");
+}
+
+function deletePersonalTransaction(id){
+    personalTransactions = personalTransactions.filter(x => Number(x.id) !== Number(id));
+
+    if(Number(editingPersonalId) === Number(id)){
+        editingPersonalId = null;
+        resetPersonalForm();
+    }
+
+    saveAll();
+    renderPersonal();
+}
+
+/* ---------- WhatsApp number + messages ---------- */
+function savePersonalPhoneNumber(){
+    let phone = document.getElementById("personalPhoneInput").value.trim().replace(/[^0-9]/g, "");
+    if(phone.length < 10){ alert("Please enter a valid WhatsApp number."); return; }
+
+    personalPhone = phone;
+    saveAll();
+    alert("WhatsApp number saved.");
+    renderPersonal();
+}
+
+function sendPersonalWhatsApp(id){
+    let t = personalTransactions.find(x => Number(x.id) === Number(id));
+    if(!t) return;
+
+    if(!personalPhone || personalPhone.length < 10){
+        alert("Please save a valid WhatsApp number first.");
+        return;
+    }
+
+    let balance = getPersonalRunningBalance(t.id);
+    let actionLabel = t.type === "income" ? "Money Added" : "Money Spent";
+    let balanceLabel = t.type === "income" ? "Current Balance" : "Remaining Balance";
+
+    let message = buildSplitMateMessage(actionLabel, t.amount, t.note || t.category, t.date, balanceLabel, balance);
+
+    let whatsappURL = "https://wa.me/" + personalPhone + "?text=" + encodeURIComponent(message);
+    window.open(whatsappURL, "_blank");
+}
+
+/* ---------- statement ---------- */
+function computePersonalStatementData(){
+    let from = document.getElementById("personalStmtFrom").value;
+    let to = document.getElementById("personalStmtTo").value;
+
+    let list = personalTransactions
+        .filter(t => {
+            if(from && t.date < from) return false;
+            if(to && t.date > to) return false;
+            return true;
+        })
+        .sort((a,b) => {
+            let c = a.date.localeCompare(b.date);
+            if(c !== 0) return c;
+            return Number(a.id) - Number(b.id);
+        });
+
+    let totalIncome = 0, totalSpent = 0;
+    let rows = list.map(t => {
+        if(t.type === "income") totalIncome += Number(t.amount);
+        else totalSpent += Number(t.amount);
+        return Object.assign({}, t, { balanceAfter: getPersonalRunningBalance(t.id) });
+    });
+
+    let netBalance = totalIncome - totalSpent;
+
+    return { from, to, totalIncome, totalSpent, netBalance, rows };
+}
+
+function renderPersonalStatement(){
+    let container = document.getElementById("personalStatement");
+    if(!container) return;
+
+    let data = computePersonalStatementData();
+
+    let summaryHTML = `
+        <div class="breakdown">
+            <div class="breakdown-row"><span>Period</span><strong>${data.from ? formatDateDisplay(data.from) : "Beginning"} → ${data.to ? formatDateDisplay(data.to) : "Today"}</strong></div>
+            <div class="breakdown-row"><span>Total Income</span><strong class="green">+₹${data.totalIncome.toFixed(2)}</strong></div>
+            <div class="breakdown-row"><span>Total Spent</span><strong class="red">-₹${data.totalSpent.toFixed(2)}</strong></div>
+            <div class="breakdown-row"><span>Net Balance</span><strong class="${data.netBalance >= 0 ? "green" : "red"}">${data.netBalance >= 0 ? "+" : "-"}₹${Math.abs(data.netBalance).toFixed(2)}</strong></div>
+        </div>
+    `;
+
+    let rowsHTML;
+    if(data.rows.length === 0){
+        rowsHTML = `<div class="empty">No transactions in this range.</div>`;
+    } else {
+        rowsHTML = data.rows.slice().reverse().map(r => `
+            <div class="transaction">
+                <div style="display:flex;justify-content:space-between;">
+                    <strong>${escapeHTML(r.category)}</strong>
+                    <strong class="${r.type === "income" ? "green" : "red"}">${r.type === "income" ? "+" : "-"}₹${Number(r.amount).toFixed(2)}</strong>
+                </div>
+                ${r.note ? `<div class="gray">📝 ${escapeHTML(r.note)}</div>` : ""}
+                <div class="history-date">📅 ${formatDateDisplay(r.date)}</div>
+                <div style="margin-top:6px">Balance: <strong class="${r.balanceAfter >= 0 ? "green" : "red"}">${r.balanceAfter >= 0 ? "+" : "-"}₹${Math.abs(r.balanceAfter).toFixed(2)}</strong></div>
+            </div>
+        `).join("");
+    }
+
+    container.innerHTML = summaryHTML + rowsHTML;
+}
+
+/* ---------- PDF export ---------- */
+function downloadPersonalStatementPDF(){
+    let data = computePersonalStatementData();
+
+    if(typeof window.jspdf === "undefined"){
+        alert("PDF library could not be loaded (check your internet connection) - please try again.");
+        return;
+    }
+
+    let { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+    let pageHeight = doc.internal.pageSize.getHeight();
+    let marginLeft = 14;
+    let y = 18;
+
+    doc.setFontSize(16);
+    doc.setFont(undefined, "bold");
+    doc.text("SplitMate", marginLeft, y); y += 8;
+    doc.text("Personal Statement", marginLeft, y); y += 10;
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, "normal");
+    doc.text("Statement Period:", marginLeft, y); y += 6;
+    doc.text((data.from ? formatDateDisplay(data.from) : "Beginning") + " -> " + (data.to ? formatDateDisplay(data.to) : "Today"), marginLeft, y); y += 10;
+
+    doc.text("Total Income: Rs " + data.totalIncome.toFixed(2), marginLeft, y); y += 6;
+    doc.text("Total Spent: Rs " + data.totalSpent.toFixed(2), marginLeft, y); y += 6;
+    doc.text("Net Balance: " + (data.netBalance >= 0 ? "+" : "-") + "Rs " + Math.abs(data.netBalance).toFixed(2), marginLeft, y); y += 10;
+
+    doc.setFont(undefined, "bold");
+    doc.text("Transactions", marginLeft, y); y += 8;
+
+    let col = { date: marginLeft, type: 38, category: 58, note: 92, amount: 148, balance: 175 };
+
+    function drawTableHeader(){
+        doc.setFontSize(9);
+        doc.setFont(undefined, "bold");
+        doc.text("Date", col.date, y);
+        doc.text("Type", col.type, y);
+        doc.text("Category", col.category, y);
+        doc.text("Note", col.note, y);
+        doc.text("Amount", col.amount, y);
+        doc.text("Balance", col.balance, y);
+        y += 2;
+        doc.line(marginLeft, y, 196, y);
+        y += 6;
+        doc.setFont(undefined, "normal");
+    }
+
+    drawTableHeader();
+
+    if(data.rows.length === 0){
+        doc.text("No transactions in this range.", marginLeft, y);
+    } else {
+        data.rows.forEach(r => {
+            if(y > pageHeight - 15){
+                doc.addPage();
+                y = 18;
+                drawTableHeader();
+            }
+
+            let note = r.note && r.note.length > 16 ? r.note.slice(0, 13) + "..." : (r.note || "");
+            let cat = r.category && r.category.length > 16 ? r.category.slice(0, 13) + "..." : r.category;
+
+            doc.text(formatDateDisplay(r.date), col.date, y);
+            doc.text(r.type === "income" ? "Income" : "Expense", col.type, y);
+            doc.text(cat, col.category, y);
+            doc.text(note, col.note, y);
+            doc.text((r.type === "income" ? "+" : "-") + "Rs " + Number(r.amount).toFixed(2), col.amount, y);
+            doc.text((r.balanceAfter >= 0 ? "+" : "-") + "Rs " + Math.abs(r.balanceAfter).toFixed(2), col.balance, y);
+            y += 7;
+        });
+    }
+
+    doc.save("SplitMate-Personal-Statement-" + today() + ".pdf");
+}
+
+/* ---------- CSV export ---------- */
+function csvEscape(text){
+    let t = String(text || "");
+    if(t.includes(",") || t.includes('"') || t.includes("\n")){
+        return '"' + t.replace(/"/g, '""') + '"';
+    }
+    return t;
+}
+
+function downloadPersonalStatementCSV(){
+    let data = computePersonalStatementData();
+
+    let lines = ["Date,Type,Category,Note,Amount,Balance"];
+
+    data.rows.forEach(r => {
+        let row = [
+            formatDateDisplay(r.date),
+            r.type === "income" ? "Income" : "Expense",
+            csvEscape(r.category),
+            csvEscape(r.note || ""),
+            (r.type === "income" ? "" : "-") + Number(r.amount).toFixed(2),
+            r.balanceAfter.toFixed(2)
+        ];
+        lines.push(row.join(","));
+    });
+
+    let csvContent = lines.join("\n");
+    let blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "SplitMate-Personal-Statement-" + today() + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 /* =====================================================
@@ -1549,6 +2188,8 @@ function exportBackup(){
         expenses,
         individualMembers,
         transactions,
+        personalTransactions,
+        personalPhone,
         exportedAt: new Date().toISOString()
     };
 
@@ -1582,6 +2223,8 @@ function importBackup(event){
             expenses = Array.isArray(data.expenses) ? data.expenses : [];
             individualMembers = Array.isArray(data.individualMembers) ? data.individualMembers : [];
             transactions = Array.isArray(data.transactions) ? data.transactions : [];
+            personalTransactions = Array.isArray(data.personalTransactions) ? data.personalTransactions : [];
+            personalPhone = typeof data.personalPhone === "string" ? data.personalPhone : "";
 
             expenses.forEach(expense => {
                 if(!Array.isArray(expense.shares)) expense.shares = [];
@@ -1592,10 +2235,19 @@ function importBackup(event){
                 if(typeof expense.amount !== "number") expense.amount = Number(expense.amount) || 0;
             });
 
+            personalTransactions.forEach(t => {
+                if(typeof t.amount !== "number") t.amount = Number(t.amount) || 0;
+                if(t.type !== "income" && t.type !== "expense") t.type = "expense";
+                if(!t.category) t.category = "📦 Other";
+            });
+
             saveAll();
             editingExpenseId = null;
+            editingPersonalId = null;
             renderIndividual();
             renderGroup();
+            renderPersonal();
+            document.getElementById("personalPhoneInput").value = personalPhone;
             alert("Backup imported successfully!");
         } catch(err){
             alert("Invalid backup file.");
@@ -1606,7 +2258,7 @@ function importBackup(event){
 }
 
 function clearAllData(){
-    if(!confirm("This will permanently delete ALL data (members, expenses, transactions). This cannot be undone. Continue?")) return;
+    if(!confirm("This will permanently delete ALL data (members, expenses, transactions, personal transactions). This cannot be undone. Continue?")) return;
     if(!confirm("Are you absolutely sure you want to erase everything?")) return;
 
     members = [];
@@ -1614,11 +2266,16 @@ function clearAllData(){
     expenses = [];
     individualMembers = [];
     transactions = [];
+    personalTransactions = [];
+    personalPhone = "";
     editingExpenseId = null;
+    editingPersonalId = null;
 
     saveAll();
     renderIndividual();
     renderGroup();
+    renderPersonal();
+    document.getElementById("personalPhoneInput").value = "";
     alert("All data cleared.");
 }
 
@@ -1656,9 +2313,13 @@ function escapeJS(text){
 ===================================================== */
 document.getElementById("transactionDate").value = today();
 document.getElementById("expenseDate").value = today();
+document.getElementById("personalDate").value = today();
+
+if(personalPhone) document.getElementById("personalPhoneInput").value = personalPhone;
 
 renderIndividual();
 renderGroup();
+renderPersonal();
 </script>
 
 </body>
