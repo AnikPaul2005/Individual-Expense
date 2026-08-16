@@ -161,6 +161,8 @@ button:hover{opacity:.9;}
 <option value="spend">Money Spent</option>
 </select>
 
+<button class="success" style="width:100%;margin-bottom:10px" onclick="downloadStatementPDF()">⬇️ Download PDF</button>
+
 <div id="individualStatement"></div>
 </div>
 
@@ -263,6 +265,9 @@ button:hover{opacity:.9;}
 </div>
 
 <footer style="text-align:center;padding:25px;color:#777;">SplitMate © 2026</footer>
+
+<!-- jsPDF: only external dependency, needed to generate a real downloadable PDF file -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 /* =====================================================
@@ -606,17 +611,9 @@ function renderTransactionHistory(){
 /* =====================================================
    INDIVIDUAL STATEMENT
 ===================================================== */
-function renderIndividualStatement(){
-    let container = document.getElementById("individualStatement");
-    if(!container) return;
-
+function computeIndividualStatementData(){
     let member = document.getElementById("statementMember").value;
-    container.innerHTML = "";
-
-    if(!member){
-        container.innerHTML = `<div class="empty">Select a member to view their statement.</div>`;
-        return;
-    }
+    if(!member) return null;
 
     let from = document.getElementById("statementFrom").value;
     let to = document.getElementById("statementTo").value;
@@ -648,23 +645,38 @@ function renderIndividualStatement(){
     });
 
     let closing = running;
+    let displayRows = rows.filter(r => typeFilter === "all" || r.type === typeFilter);
+
+    let typeLabel = typeFilter === "all" ? "All Transactions" : (typeFilter === "add" ? "Money Added" : "Money Spent");
+
+    return { member, from, to, typeFilter, typeLabel, opening, totalAdded, totalSpent, closing, rows: displayRows };
+}
+
+function renderIndividualStatement(){
+    let container = document.getElementById("individualStatement");
+    if(!container) return;
+
+    let data = computeIndividualStatementData();
+
+    if(!data){
+        container.innerHTML = `<div class="empty">Select a member to view their statement.</div>`;
+        return;
+    }
 
     let summaryHTML = `
         <div class="breakdown">
-            <div class="breakdown-row"><span>Opening Balance</span><strong class="${opening >= 0 ? "green" : "red"}">${opening >= 0 ? "+" : "-"}₹${Math.abs(opening).toFixed(2)}</strong></div>
-            <div class="breakdown-row"><span>Total Added</span><strong class="green">+₹${totalAdded.toFixed(2)}</strong></div>
-            <div class="breakdown-row"><span>Total Spent</span><strong class="red">-₹${totalSpent.toFixed(2)}</strong></div>
-            <div class="breakdown-row"><span>Closing Balance</span><strong class="${closing >= 0 ? "green" : "red"}">${closing >= 0 ? "+" : "-"}₹${Math.abs(closing).toFixed(2)}</strong></div>
+            <div class="breakdown-row"><span>Opening Balance</span><strong class="${data.opening >= 0 ? "green" : "red"}">${data.opening >= 0 ? "+" : "-"}₹${Math.abs(data.opening).toFixed(2)}</strong></div>
+            <div class="breakdown-row"><span>Total Added</span><strong class="green">+₹${data.totalAdded.toFixed(2)}</strong></div>
+            <div class="breakdown-row"><span>Total Spent</span><strong class="red">-₹${data.totalSpent.toFixed(2)}</strong></div>
+            <div class="breakdown-row"><span>Closing Balance</span><strong class="${data.closing >= 0 ? "green" : "red"}">${data.closing >= 0 ? "+" : "-"}₹${Math.abs(data.closing).toFixed(2)}</strong></div>
         </div>
     `;
 
-    let displayRows = rows.filter(r => typeFilter === "all" || r.type === typeFilter);
-
     let rowsHTML;
-    if(displayRows.length === 0){
+    if(data.rows.length === 0){
         rowsHTML = `<div class="empty">No transactions in this range.</div>`;
     } else {
-        rowsHTML = displayRows.slice().reverse().map(r => `
+        rowsHTML = data.rows.slice().reverse().map(r => `
             <div class="transaction">
                 <div style="display:flex;justify-content:space-between;">
                     <strong>${r.type === "add" ? "💵 Added" : "💸 Spent"}</strong>
@@ -678,6 +690,97 @@ function renderIndividualStatement(){
     }
 
     container.innerHTML = summaryHTML + rowsHTML;
+}
+
+/* =====================================================
+   STATEMENT PDF EXPORT
+===================================================== */
+function formatSignedRs(v){
+    return (v >= 0 ? "+" : "-") + "Rs " + Math.abs(v).toFixed(2);
+}
+
+function downloadStatementPDF(){
+    let data = computeIndividualStatementData();
+
+    if(!data){
+        alert("Please select a member first.");
+        return;
+    }
+
+    if(typeof window.jspdf === "undefined"){
+        alert("PDF library could not be loaded (check your internet connection) - please try again.");
+        return;
+    }
+
+    let { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+    let pageHeight = doc.internal.pageSize.getHeight();
+    let marginLeft = 14;
+    let y = 18;
+
+    doc.setFontSize(16);
+    doc.setFont(undefined, "bold");
+    doc.text("SplitMate - Individual Statement", marginLeft, y);
+    y += 9;
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, "normal");
+    doc.text("Member: " + data.member, marginLeft, y); y += 6;
+    doc.text("Period: " + (data.from ? formatDateDisplay(data.from) : "Beginning") + " to " + (data.to ? formatDateDisplay(data.to) : "Today"), marginLeft, y); y += 6;
+    doc.text("Filter: " + data.typeLabel, marginLeft, y); y += 6;
+    doc.text("Generated: " + formatDateDisplay(today()), marginLeft, y); y += 10;
+
+    doc.setFont(undefined, "bold");
+    doc.text("Summary", marginLeft, y); y += 7;
+    doc.setFont(undefined, "normal");
+    doc.text("Opening Balance: " + formatSignedRs(data.opening), marginLeft, y); y += 6;
+    doc.text("Total Added: +Rs " + data.totalAdded.toFixed(2), marginLeft, y); y += 6;
+    doc.text("Total Spent: -Rs " + data.totalSpent.toFixed(2), marginLeft, y); y += 6;
+    doc.text("Closing Balance: " + formatSignedRs(data.closing), marginLeft, y); y += 10;
+
+    doc.setFont(undefined, "bold");
+    doc.text("Transactions", marginLeft, y); y += 8;
+
+    let col = { date: marginLeft, type: 42, note: 68, amount: 138, balance: 170 };
+
+    function drawTableHeader(){
+        doc.setFontSize(10);
+        doc.setFont(undefined, "bold");
+        doc.text("Date", col.date, y);
+        doc.text("Type", col.type, y);
+        doc.text("Note", col.note, y);
+        doc.text("Amount", col.amount, y);
+        doc.text("Balance", col.balance, y);
+        y += 2;
+        doc.line(marginLeft, y, 196, y);
+        y += 6;
+        doc.setFont(undefined, "normal");
+    }
+
+    drawTableHeader();
+
+    if(data.rows.length === 0){
+        doc.text("No transactions in this range.", marginLeft, y);
+    } else {
+        data.rows.forEach(r => {
+            if(y > pageHeight - 15){
+                doc.addPage();
+                y = 18;
+                drawTableHeader();
+            }
+
+            let note = r.note && r.note.length > 26 ? r.note.slice(0, 23) + "..." : (r.note || "");
+
+            doc.text(formatDateDisplay(r.date), col.date, y);
+            doc.text(r.type === "add" ? "Added" : "Spent", col.type, y);
+            doc.text(note, col.note, y);
+            doc.text((r.type === "add" ? "+" : "-") + "Rs " + Number(r.amount).toFixed(2), col.amount, y);
+            doc.text(formatSignedRs(r.balanceAfter), col.balance, y);
+            y += 7;
+        });
+    }
+
+    doc.save("SplitMate-Statement-" + data.member.replace(/[^a-z0-9]/gi, "_") + "-" + today() + ".pdf");
 }
 
 /* =====================================================
