@@ -312,6 +312,15 @@ button:hover{opacity:.9;}
 </div>
 
 <div class="card">
+<div class="title">🔗 Personal Sync Settings</div>
+<div style="font-weight:bold;margin-bottom:8px">👤 Which member is you? (for Group → Personal sync)</div>
+<select id="currentGroupUserSelect" onchange="setCurrentGroupUser()">
+<option value="">Not set</option>
+</select>
+<div class="history-date" style="margin-top:8px">This determines whose share automatically syncs into your Personal Expense when "Sync to Personal Expense" is ON.</div>
+</div>
+
+<div class="card">
 <div class="title">💰 Add Group Expense</div>
 <input id="expenseName" type="text" placeholder="Expense name e.g. Biryani">
 
@@ -337,6 +346,16 @@ button:hover{opacity:.9;}
 </div>
 
 <select id="payer"><option value="">Select who paid</option></select>
+
+<label class="paid-box" style="margin:6px 0 8px">
+<input type="checkbox" id="expenseSyncToggle" checked>
+<span>🔁 Sync to Personal Expense</span>
+</label>
+
+<label class="paid-box" style="margin:0 0 12px">
+<input type="checkbox" id="expenseSyncIndividualToggle" checked>
+<span>🔁 Sync to Individual</span>
+</label>
 
 <button id="addExpenseBtn" class="primary" style="width:100%" onclick="submitExpenseForm()">+ Add Expense</button>
 <button id="cancelEditBtn" class="danger small hidden" style="width:100%;margin-top:8px" onclick="cancelEditExpense()">✖ Cancel Edit</button>
@@ -411,6 +430,14 @@ let transactions = JSON.parse(localStorage.getItem("sm_transactions") || "[]");
 let personalTransactions = JSON.parse(localStorage.getItem("sm_personal_transactions") || "[]");
 let personalPhone = localStorage.getItem("sm_personal_phone") || "";
 
+/* Which group member is "you" - needed to know whose share to sync into Personal */
+let currentGroupUser = localStorage.getItem("sm_current_group_user") || "";
+
+/* Group member name -> permanent Individual person ID. This is what lets a Group
+   member and an Individual person stay correctly linked even if the display name
+   changes later - the ID never changes, only this mapping's key gets rewritten. */
+let memberPersonIds = JSON.parse(localStorage.getItem("sm_member_person_ids") || "{}");
+
 let splitType = "equal";
 let transactionFilter = "all";
 let personalTypeFilter = "all";
@@ -420,6 +447,12 @@ let editingPersonalId = null;
 /* =====================================================
    FIX OLD DATA (normalize, never destroy)
 ===================================================== */
+function generatePersonId(){
+    return "person_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+let personIdsAssignedDuringLoad = false;
+
 expenses.forEach(expense => {
     if(!Array.isArray(expense.shares)) expense.shares = [];
     expense.shares.forEach(share => {
@@ -427,12 +460,48 @@ expenses.forEach(expense => {
         if(typeof share.amount !== "number") share.amount = Number(share.amount) || 0;
     });
     if(typeof expense.amount !== "number") expense.amount = Number(expense.amount) || 0;
+    /* Old expenses predate the sync features - default OFF so nothing is
+       retroactively synced without an explicit user action. */
+    if(typeof expense.syncPersonal !== "boolean") expense.syncPersonal = false;
+    if(typeof expense.syncIndividual !== "boolean") expense.syncIndividual = false;
 });
 
 personalTransactions.forEach(t => {
     if(typeof t.amount !== "number") t.amount = Number(t.amount) || 0;
     if(t.type !== "income" && t.type !== "expense") t.type = "expense";
     if(!t.category) t.category = "📦 Other";
+    /* Old personal entries predate group-sync linking - they are manual by definition. */
+    if(t.sourceType !== "group" && t.sourceType !== "manual") t.sourceType = "manual";
+    if(typeof t.sourceExpenseId === "undefined") t.sourceExpenseId = null;
+});
+
+transactions.forEach(t => {
+    if(typeof t.amount !== "number") t.amount = Number(t.amount) || 0;
+    /* Old Individual transactions predate group-sync linking - they are manual by definition. */
+    if(t.sourceType !== "group" && t.sourceType !== "manual") t.sourceType = "manual";
+    if(typeof t.sourceExpenseId === "undefined") t.sourceExpenseId = null;
+    if(typeof t.sourceMember === "undefined") t.sourceMember = null;
+});
+
+/* Permanent Person ID migration: assign an ID once to any Individual person that
+   doesn't already have one. Never regenerated afterwards, never shown in the UI. */
+individualMembers.forEach(m => {
+    if(!m.id){
+        m.id = generatePersonId();
+        personIdsAssignedDuringLoad = true;
+    }
+});
+
+/* Safely map old Group members to their Individual person by matching name,
+   without merging or guessing across different people. */
+members.forEach(name => {
+    if(!memberPersonIds[name]){
+        let existingPerson = individualMembers.find(m => m.name === name);
+        if(existingPerson){
+            memberPersonIds[name] = existingPerson.id;
+            personIdsAssignedDuringLoad = true;
+        }
+    }
 });
 
 /* =====================================================
@@ -446,6 +515,233 @@ function saveAll(){
     localStorage.setItem("sm_transactions", JSON.stringify(transactions));
     localStorage.setItem("sm_personal_transactions", JSON.stringify(personalTransactions));
     localStorage.setItem("sm_personal_phone", personalPhone);
+    localStorage.setItem("sm_current_group_user", currentGroupUser);
+    localStorage.setItem("sm_member_person_ids", JSON.stringify(memberPersonIds));
+}
+
+/* Persist any IDs that were just generated during migration, immediately -
+   so they exist permanently even if the user closes the app without any
+   other change triggering a save. */
+if(personIdsAssignedDuringLoad) saveAll();
+
+/* =====================================================
+   CUSTOM ROUNDING (DISPLAY ONLY)
+   decimal < 0.60  -> round DOWN
+   decimal >= 0.60 -> round UP
+   Internal calculations always use the raw decimal value;
+   this is used only where an amount is shown on screen.
+===================================================== */
+function customRound(value){
+    let v = Number(value) || 0;
+    let flooredValue = Math.floor(v);
+    let decimal = v - flooredValue;
+    return decimal >= 0.60 ? Math.ceil(v) : Math.floor(v);
+}
+
+function formatRoundedRupee(value){
+    return "₹" + customRound(value);
+}
+
+/* =====================================================
+   GROUP -> PERSONAL SYNC ENGINE
+   -----------------------------------------------------
+   - One linked Personal entry per Group Expense, found via
+     sourceType==="group" && sourceExpenseId===expense.id.
+   - Called only from explicit actions (add/edit expense,
+     toggle sync, change "who am I") - never on page load -
+     so refreshing the app can never create a duplicate.
+===================================================== */
+function getCurrentUserShare(expense){
+    if(!currentGroupUser) return null;
+    let share = expense.shares.find(s => s.member === currentGroupUser);
+    if(!share) return null;
+    return Number(share.amount) || 0;
+}
+
+function syncExpenseToPersonal(expense){
+    let existing = personalTransactions.find(t => t.sourceType === "group" && t.sourceExpenseId === expense.id);
+
+    if(!expense.syncPersonal){
+        if(existing) personalTransactions = personalTransactions.filter(t => t !== existing);
+        return;
+    }
+
+    let myShare = getCurrentUserShare(expense);
+
+    if(myShare === null){
+        // No "who am I" set, or that member isn't part of this expense - nothing to sync.
+        if(existing) personalTransactions = personalTransactions.filter(t => t !== existing);
+        return;
+    }
+
+    if(existing){
+        existing.amount = myShare;
+        existing.date = expense.date;
+        existing.category = "👥 Group Expense";
+        existing.note = expense.name + " (Group)";
+        existing.type = "expense";
+    } else {
+        personalTransactions.push({
+            id: Date.now(),
+            type: "expense",
+            amount: myShare,
+            category: "👥 Group Expense",
+            note: expense.name + " (Group)",
+            date: expense.date,
+            sourceType: "group",
+            sourceExpenseId: expense.id
+        });
+    }
+}
+
+function removeExpenseSync(expenseId){
+    personalTransactions = personalTransactions.filter(t => !(t.sourceType === "group" && t.sourceExpenseId === expenseId));
+}
+
+function setCurrentGroupUser(){
+    currentGroupUser = document.getElementById("currentGroupUserSelect").value;
+    expenses.forEach(expense => syncExpenseToPersonal(expense));
+    saveAll();
+    renderGroup();
+    renderPersonal();
+}
+
+function toggleExpenseSyncFlag(expenseId, checked){
+    let expense = expenses.find(x => Number(x.id) === Number(expenseId));
+    if(!expense) return;
+
+    expense.syncPersonal = Boolean(checked);
+    syncExpenseToPersonal(expense);
+    saveAll();
+    renderGroupExpenses();
+    renderPersonal();
+}
+
+/* =====================================================
+   GROUP -> INDIVIDUAL SYNC ENGINE
+   -----------------------------------------------------
+   - For each member involved in the expense, one linked
+     Individual transaction is created/updated, found via
+     sourceType==="group" && sourceExpenseId===expense.id
+     && sourceMember===member.
+   - Net amount per member uses the same accounting model
+     as Group Balance: an unpaid share is still outstanding
+     (payer +amount / member -amount); a paid share is
+     already settled and contributes nothing. This keeps
+     Individual perfectly in sync with the Paid checkboxes.
+   - Called only from explicit actions - never on page load -
+     so refreshing the app can never create duplicates.
+===================================================== */
+function computeExpenseNetPerMember(expense){
+    let net = {};
+
+    expense.shares.forEach(share => {
+        if(!(share.member in net)) net[share.member] = 0;
+    });
+    if(!(expense.payer in net)) net[expense.payer] = 0;
+
+    expense.shares.forEach(share => {
+        let member = share.member;
+        let amount = Number(share.amount) || 0;
+        if(member === expense.payer) return;
+
+        // IMPORTANT: Paid/Settlement belongs ONLY to Group Mode.
+        // Individual sync represents the Group expense itself and must count it
+        // exactly once. Ticking Paid in Group must NOT remove/re-add/change the
+        // Individual transaction.
+        net[expense.payer] += amount;
+        net[member] -= amount;
+    });
+
+    return net;
+}
+
+function ensureIndividualMemberExists(name){
+    let person = individualMembers.find(m => m.name === name);
+
+    if(!person){
+        person = { id: generatePersonId(), name: name, phone: memberPhones[name] || "" };
+        individualMembers.push(person);
+    }
+
+    // Keep the Group member -> Individual person link current (by permanent ID,
+    // not by name), regardless of which side created the person first.
+    memberPersonIds[name] = person.id;
+
+    return person;
+}
+
+function syncExpenseToIndividual(expense){
+    if(!expense.syncIndividual){
+        removeExpenseIndividualSync(expense.id);
+        return;
+    }
+
+    let net = computeExpenseNetPerMember(expense);
+    let idOffset = 0;
+
+    Object.keys(net).forEach(member => {
+        let amount = net[member];
+        let existing = transactions.find(t => t.sourceType === "group" && t.sourceExpenseId === expense.id && t.sourceMember === member);
+
+        if(Math.abs(amount) < 0.005){
+            // Nothing outstanding for this member from this expense - remove any linked entry.
+            if(existing) transactions = transactions.filter(t => t !== existing);
+            return;
+        }
+
+        ensureIndividualMemberExists(member);
+        let personId = memberPersonIds[member];
+
+        let type = amount > 0 ? "add" : "spend";
+        let absAmount = Math.abs(amount);
+
+        if(existing){
+            existing.type = type;
+            existing.amount = absAmount;
+            existing.date = expense.date;
+            existing.note = expense.name + " (Group)";
+            existing.member = member;
+            existing.sourcePersonId = personId;
+        } else {
+            transactions.push({
+                id: Date.now() + (idOffset++),
+                member: member,
+                type: type,
+                amount: absAmount,
+                note: expense.name + " (Group)",
+                date: expense.date,
+                sourceType: "group",
+                sourceExpenseId: expense.id,
+                sourceMember: member,
+                sourcePersonId: personId
+            });
+        }
+    });
+
+    // Drop stale linked entries for members who are no longer owed/owing on this expense
+    // (e.g. removed from the split, or their share got fully paid).
+    transactions = transactions.filter(t => {
+        if(t.sourceType === "group" && t.sourceExpenseId === expense.id){
+            return Math.abs(net[t.sourceMember] || 0) >= 0.005;
+        }
+        return true;
+    });
+}
+
+function removeExpenseIndividualSync(expenseId){
+    transactions = transactions.filter(t => !(t.sourceType === "group" && t.sourceExpenseId === expenseId));
+}
+
+function toggleExpenseSyncIndividualFlag(expenseId, checked){
+    let expense = expenses.find(x => Number(x.id) === Number(expenseId));
+    if(!expense) return;
+
+    expense.syncIndividual = Boolean(checked);
+    syncExpenseToIndividual(expense);
+    saveAll();
+    renderGroupExpenses();
+    renderIndividual();
 }
 
 /* =====================================================
@@ -520,7 +816,7 @@ function addIndividualMember(){
         return;
     }
 
-    individualMembers.push({ name:name, phone:phone });
+    individualMembers.push({ id: generatePersonId(), name:name, phone:phone });
     saveAll();
 
     document.getElementById("individualName").value = "";
@@ -534,9 +830,76 @@ function deleteIndividualMember(name){
         alert("This member already has transactions. Delete transactions first.");
         return;
     }
+
+    let person = individualMembers.find(x => x.name === name);
     individualMembers = individualMembers.filter(x => x.name !== name);
+
+    if(person){
+        Object.keys(memberPersonIds).forEach(groupName => {
+            if(memberPersonIds[groupName] === person.id) delete memberPersonIds[groupName];
+        });
+    }
+
     saveAll();
     renderIndividual();
+}
+
+function renameIndividualMember(id){
+    let person = individualMembers.find(m => m.id === id);
+    if(!person) return;
+
+    let newName = prompt("Rename \"" + person.name + "\" to:", person.name);
+    if(newName === null) return;
+
+    newName = newName.trim();
+    if(!newName){ alert("Name cannot be empty."); return; }
+    if(newName === person.name) return;
+
+    if(individualMembers.some(m => m.id !== id && m.name.toLowerCase() === newName.toLowerCase())){
+        alert("Another member already has that name.");
+        return;
+    }
+
+    let oldName = person.name;
+    person.name = newName;
+
+    // Cascade the rename everywhere the OLD name was used as a key, so every
+    // existing relationship - ledger history, Group membership, expense
+    // shares, sync links - keeps pointing at this same permanent person
+    // (identified internally by id, never by the display name).
+    transactions.forEach(t => {
+        if(t.member === oldName) t.member = newName;
+        if(t.sourceMember === oldName) t.sourceMember = newName;
+    });
+
+    if(typeof memberPersonIds[oldName] !== "undefined"){
+        memberPersonIds[newName] = memberPersonIds[oldName];
+        delete memberPersonIds[oldName];
+    }
+
+    let groupIdx = members.indexOf(oldName);
+    if(groupIdx !== -1){
+        members[groupIdx] = newName;
+
+        if(typeof memberPhones[oldName] !== "undefined"){
+            memberPhones[newName] = memberPhones[oldName];
+            delete memberPhones[oldName];
+        }
+
+        if(currentGroupUser === oldName) currentGroupUser = newName;
+
+        expenses.forEach(expense => {
+            if(expense.payer === oldName) expense.payer = newName;
+            expense.shares.forEach(share => {
+                if(share.member === oldName) share.member = newName;
+            });
+        });
+    }
+
+    saveAll();
+    renderGroup();
+    renderIndividual();
+    renderPersonal();
 }
 
 /* =====================================================
@@ -563,7 +926,10 @@ function renderIndividual(){
                     <strong>👤 ${escapeHTML(member.name)}</strong>
                     <div class="history-date">📱 ${escapeHTML(member.phone || "")}</div>
                 </div>
-                <button class="danger small" onclick="deleteIndividualMember('${escapeJS(member.name)}')">Remove</button>
+                <div style="display:flex;gap:6px;">
+                    <button class="primary small" onclick="renameIndividualMember('${escapeJS(member.id)}')">✏️ Rename</button>
+                    <button class="danger small" onclick="deleteIndividualMember('${escapeJS(member.name)}')">Remove</button>
+                </div>
             `;
             list.appendChild(div);
 
@@ -733,6 +1099,8 @@ function renderTransactionHistory(){
 
         let typeText = transaction.type === "add" ? "💵 Money Added" : "💸 Money Spent";
         let color = transaction.type === "add" ? "green" : "red";
+        let isSynced = transaction.sourceType === "group";
+        let amountDisplay = isSynced ? formatRoundedRupee(transaction.amount) : ("₹" + Number(transaction.amount).toFixed(2));
 
         let whatsappButton = "";
         if(phone){
@@ -741,10 +1109,14 @@ function renderTransactionHistory(){
             `;
         }
 
+        let actionsHTML = isSynced
+            ? `${whatsappButton}<span class="badge badge-settled">🔁 Synced from Group</span>`
+            : `${whatsappButton}<button class="danger small" onclick="deleteTransaction(${transaction.id})">Delete</button>`;
+
         div.innerHTML = `
             <div style="display:flex;justify-content:space-between;gap:10px;">
                 <strong>👤 ${escapeHTML(transaction.member)}</strong>
-                <strong class="${color}">${transaction.type === "add" ? "+" : "-"}₹${Number(transaction.amount).toFixed(2)}</strong>
+                <strong class="${color}">${transaction.type === "add" ? "+" : "-"}${amountDisplay}</strong>
             </div>
             <div style="margin-top:5px">${typeText}</div>
             <div class="gray">📝 ${escapeHTML(transaction.note)}</div>
@@ -753,9 +1125,8 @@ function renderTransactionHistory(){
                 Balance:
                 <strong class="${balance >= 0 ? "green" : "red"}">${balance >= 0 ? "+" : "-"}₹${Math.abs(balance).toFixed(2)}</strong>
             </div>
-            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                ${whatsappButton}
-                <button class="danger small" onclick="deleteTransaction(${transaction.id})">Delete</button>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                ${actionsHTML}
             </div>
         `;
 
@@ -1026,6 +1397,13 @@ function sendIndividualWhatsApp(phone, memberName, type, amount, currentBalance,
    DELETE TRANSACTION
 ===================================================== */
 function deleteTransaction(id){
+    let t = transactions.find(x => Number(x.id) === Number(id));
+
+    if(t && t.sourceType === "group"){
+        alert("This entry is synced from a Group Expense. Delete it or turn off Individual sync on that expense in Group Mode instead.");
+        return;
+    }
+
     transactions = transactions.filter(x => Number(x.id) !== Number(id));
     saveAll();
     renderIndividual();
@@ -1098,11 +1476,11 @@ function renderPersonalDashboard(){
 
     let remaining = income - spent;
 
-    document.getElementById("personalTotalIncome").textContent = "+₹" + income.toFixed(2);
-    document.getElementById("personalTotalSpent").textContent = "-₹" + spent.toFixed(2);
+    document.getElementById("personalTotalIncome").textContent = "+₹" + customRound(income);
+    document.getElementById("personalTotalSpent").textContent = "-₹" + customRound(spent);
 
     let remainingEl = document.getElementById("personalRemainingBalance");
-    remainingEl.textContent = (remaining >= 0 ? "+₹" : "-₹") + Math.abs(remaining).toFixed(2);
+    remainingEl.textContent = (remaining >= 0 ? "+₹" : "-₹") + customRound(Math.abs(remaining));
     remainingEl.className = remaining >= 0 ? "green" : "red";
 }
 
@@ -1130,16 +1508,32 @@ function renderPersonalHistory(){
 
         let typeLabel = t.type === "income" ? "💰 Income" : "💸 Expense";
         let color = t.type === "income" ? "green" : "red";
+        let isSynced = t.sourceType === "group";
+        let amountDisplay = isSynced ? formatRoundedRupee(t.amount) : ("₹" + Number(t.amount).toFixed(2));
 
         let whatsappButton = "";
         if(personalPhone){
             whatsappButton = `<button class="primary small" onclick="sendPersonalWhatsApp(${t.id})">📲 WhatsApp</button>`;
         }
 
+        let actionsHTML;
+        if(isSynced){
+            actionsHTML = `
+                ${whatsappButton}
+                <span class="badge badge-settled">🔁 Synced from Group</span>
+            `;
+        } else {
+            actionsHTML = `
+                ${whatsappButton}
+                <button class="primary small" onclick="editPersonalTransaction(${t.id})">✏️ Edit</button>
+                <button class="danger small" onclick="deletePersonalTransaction(${t.id})">Delete</button>
+            `;
+        }
+
         div.innerHTML = `
             <div style="display:flex;justify-content:space-between;gap:10px;">
                 <strong>${escapeHTML(t.category)}</strong>
-                <strong class="${color}">${t.type === "income" ? "+" : "-"}₹${Number(t.amount).toFixed(2)}</strong>
+                <strong class="${color}">${t.type === "income" ? "+" : "-"}${amountDisplay}</strong>
             </div>
             <div style="margin-top:5px">${typeLabel}</div>
             ${t.note ? `<div class="gray">📝 ${escapeHTML(t.note)}</div>` : ""}
@@ -1148,10 +1542,8 @@ function renderPersonalHistory(){
                 Balance:
                 <strong class="${balance >= 0 ? "green" : "red"}">${balance >= 0 ? "+" : "-"}₹${Math.abs(balance).toFixed(2)}</strong>
             </div>
-            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                ${whatsappButton}
-                <button class="primary small" onclick="editPersonalTransaction(${t.id})">✏️ Edit</button>
-                <button class="danger small" onclick="deletePersonalTransaction(${t.id})">Delete</button>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                ${actionsHTML}
             </div>
         `;
 
@@ -1224,6 +1616,11 @@ function editPersonalTransaction(id){
     let t = personalTransactions.find(x => Number(x.id) === Number(id));
     if(!t) return;
 
+    if(t.sourceType === "group"){
+        alert("This entry is synced from a Group Expense. Edit it from Group Mode instead.");
+        return;
+    }
+
     editingPersonalId = id;
 
     document.getElementById("personalType").value = t.type;
@@ -1291,6 +1688,13 @@ function resetPersonalForm(){
 }
 
 function deletePersonalTransaction(id){
+    let t = personalTransactions.find(x => Number(x.id) === Number(id));
+
+    if(t && t.sourceType === "group"){
+        alert("This entry is synced from a Group Expense. Delete or turn off sync on that expense in Group Mode instead.");
+        return;
+    }
+
     personalTransactions = personalTransactions.filter(x => Number(x.id) !== Number(id));
 
     if(Number(editingPersonalId) === Number(id)){
@@ -1384,7 +1788,7 @@ function renderPersonalStatement(){
             <div class="transaction">
                 <div style="display:flex;justify-content:space-between;">
                     <strong>${escapeHTML(r.category)}</strong>
-                    <strong class="${r.type === "income" ? "green" : "red"}">${r.type === "income" ? "+" : "-"}₹${Number(r.amount).toFixed(2)}</strong>
+                    <strong class="${r.type === "income" ? "green" : "red"}">${r.type === "income" ? "+" : "-"}${r.sourceType === "group" ? formatRoundedRupee(r.amount) : ("₹" + Number(r.amount).toFixed(2))}</strong>
                 </div>
                 ${r.note ? `<div class="gray">📝 ${escapeHTML(r.note)}</div>` : ""}
                 <div class="history-date">📅 ${formatDateDisplay(r.date)}</div>
@@ -1547,11 +1951,18 @@ function addMember(){
 
     members.push(name);
     memberPhones[name] = phone;
+
+    // Proactively link this Group member to a permanent Individual person
+    // (creating one if needed) so the ID relationship exists from the
+    // moment the Group member is created, not only once Individual sync runs.
+    ensureIndividualMemberExists(name);
+
     saveAll();
 
     document.getElementById("memberName").value = "";
     document.getElementById("memberPhone").value = "";
     renderGroup();
+    renderIndividual();
 }
 
 function renderGroup(){
@@ -1575,10 +1986,26 @@ function renderGroup(){
         list.appendChild(div);
     });
 
+    renderCurrentGroupUserSelect();
     renderPeople();
     renderGroupExpenses();
     renderGroupBalance();
     renderGroupSummary();
+}
+
+function renderCurrentGroupUserSelect(){
+    let sel = document.getElementById("currentGroupUserSelect");
+    if(!sel) return;
+
+    sel.innerHTML = `<option value="">Not set</option>`;
+    members.forEach(name => {
+        let opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+    });
+
+    sel.value = members.includes(currentGroupUser) ? currentGroupUser : "";
 }
 
 function removeMember(index){
@@ -1732,6 +2159,8 @@ function addExpense(){
     let name = document.getElementById("expenseName").value.trim();
     let date = document.getElementById("expenseDate").value;
     let payer = document.getElementById("payer").value;
+    let syncPersonal = document.getElementById("expenseSyncToggle").checked;
+    let syncIndividual = document.getElementById("expenseSyncIndividualToggle").checked;
 
     if(!name){ alert("Enter expense name."); return; }
     if(!date){ alert("Select expense date."); return; }
@@ -1743,12 +2172,24 @@ function addExpense(){
     let { shares, total } = result;
     shares.forEach(share => { share.paid = (share.member === payer); });
 
-    expenses.push({ id: Date.now(), name, date, payer, amount: total, shares });
+    let newExpense = { id: Date.now(), name, date, payer, amount: total, shares, syncPersonal, syncIndividual };
+    expenses.push(newExpense);
+
+    let needsUserPrompt = syncPersonal && !currentGroupUser;
+    syncExpenseToPersonal(newExpense);
+    syncExpenseToIndividual(newExpense);
     saveAll();
 
     resetExpenseForm();
     renderGroup();
-    alert("Expense added successfully!");
+    renderPersonal();
+    renderIndividual();
+
+    if(needsUserPrompt){
+        alert("Expense added! Set \"Which member is you?\" above to enable Personal sync for your share.");
+    } else {
+        alert("Expense added successfully!");
+    }
 }
 
 function editExpense(id){
@@ -1765,6 +2206,8 @@ function editExpense(id){
     document.getElementById("expenseName").value = expense.name;
     document.getElementById("expenseDate").value = expense.date;
     document.getElementById("payer").value = expense.payer;
+    document.getElementById("expenseSyncToggle").checked = expense.syncPersonal !== false;
+    document.getElementById("expenseSyncIndividualToggle").checked = expense.syncIndividual !== false;
 
     if(isEqual){
         document.getElementById("totalAmount").value = expense.amount;
@@ -1799,6 +2242,8 @@ function updateExpenseSave(){
     let name = document.getElementById("expenseName").value.trim();
     let date = document.getElementById("expenseDate").value;
     let payer = document.getElementById("payer").value;
+    let syncPersonal = document.getElementById("expenseSyncToggle").checked;
+    let syncIndividual = document.getElementById("expenseSyncIndividualToggle").checked;
 
     if(!name){ alert("Enter expense name."); return; }
     if(!date){ alert("Select expense date."); return; }
@@ -1820,12 +2265,25 @@ function updateExpenseSave(){
     expense.payer = payer;
     expense.amount = total;
     expense.shares = shares;
+    expense.syncPersonal = syncPersonal;
+    expense.syncIndividual = syncIndividual;
 
+    let needsUserPrompt = syncPersonal && !currentGroupUser;
+    syncExpenseToPersonal(expense);
+    syncExpenseToIndividual(expense);
     saveAll();
+
     editingExpenseId = null;
     resetExpenseForm();
     renderGroup();
-    alert("Expense updated successfully!");
+    renderPersonal();
+    renderIndividual();
+
+    if(needsUserPrompt){
+        alert("Expense updated! Set \"Which member is you?\" above to enable Personal sync for your share.");
+    } else {
+        alert("Expense updated successfully!");
+    }
 }
 
 function cancelEditExpense(){
@@ -1838,6 +2296,8 @@ function resetExpenseForm(){
     document.getElementById("totalAmount").value = "";
     document.getElementById("payer").value = "";
     document.getElementById("expenseDate").value = today();
+    document.getElementById("expenseSyncToggle").checked = true;
+    document.getElementById("expenseSyncIndividualToggle").checked = true;
     chooseSplit("equal");
     document.getElementById("addExpenseBtn").textContent = "+ Add Expense";
     document.getElementById("cancelEditBtn").classList.add("hidden");
@@ -1859,11 +2319,15 @@ function toggleSharePaid(expenseId, memberName, checked){
         share.paid = Boolean(checked);
     }
 
+    // Settlement/Paid is a GROUP-ONLY state.
+    // Do NOT sync/recalculate Individual here. The Group expense was already
+    // counted once when it was synced, and Paid must not double-count or remove it.
     saveAll();
 
     renderGroupExpenses();
     renderGroupBalance();
     renderGroupSummary();
+    renderIndividual();
 }
 
 /* =====================================================
@@ -1934,7 +2398,7 @@ function renderGroupExpenses(){
             sharesHTML += `
                 <div class="breakdown-row">
                     <span>👤 ${escapeHTML(share.member)}</span>
-                    <strong>₹${Number(share.amount).toFixed(2)}</strong>
+                    <strong>${formatRoundedRupee(share.amount)}</strong>
                     ${paidHTML}
                     ${whatsapp}
                 </div>
@@ -1942,6 +2406,19 @@ function renderGroupExpenses(){
         });
 
         saveAll();
+
+        let syncOn = expense.syncPersonal === true;
+        let syncIndividualOn = expense.syncIndividual === true;
+        let syncHTML = `
+            <label class="paid-box" style="margin-top:8px">
+                <input type="checkbox" ${syncOn ? "checked" : ""} onchange="toggleExpenseSyncFlag(${expense.id},this.checked)">
+                <span class="badge ${syncOn ? "badge-paid" : "badge-settled"}">${syncOn ? "🔁 Synced to Personal" : "🔁 Personal Sync Off"}</span>
+            </label>
+            <label class="paid-box" style="margin-top:6px">
+                <input type="checkbox" ${syncIndividualOn ? "checked" : ""} onchange="toggleExpenseSyncIndividualFlag(${expense.id},this.checked)">
+                <span class="badge ${syncIndividualOn ? "badge-paid" : "badge-settled"}">${syncIndividualOn ? "🔁 Synced to Individual" : "🔁 Individual Sync Off"}</span>
+            </label>
+        `;
 
         div.innerHTML = `
             <div style="display:flex;justify-content:space-between;gap:10px;">
@@ -1954,6 +2431,7 @@ function renderGroupExpenses(){
                 <strong>👥 Individual Share</strong>
                 ${sharesHTML}
             </div>
+            ${syncHTML}
             <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="primary small" onclick="editExpense(${expense.id})">✏️ Edit</button>
                 <button class="danger small" onclick="deleteExpense(${expense.id})">Delete</button>
@@ -1968,6 +2446,9 @@ function renderGroupExpenses(){
    DELETE GROUP EXPENSE
 ===================================================== */
 function deleteExpense(id){
+    removeExpenseSync(id);
+    removeExpenseIndividualSync(id);
+
     expenses = expenses.filter(expense => Number(expense.id) !== Number(id));
 
     if(Number(editingExpenseId) === Number(id)){
@@ -1977,6 +2458,8 @@ function deleteExpense(id){
 
     saveAll();
     renderGroup();
+    renderPersonal();
+    renderIndividual();
 }
 
 /* =====================================================
@@ -2168,7 +2651,7 @@ function renderGroupSummary(){
         return `
             <div class="breakdown-row">
                 <span>👤 ${escapeHTML(m)}</span>
-                <span class="gray">Share: ₹${(memberShare[m]||0).toFixed(2)}</span>
+                <span class="gray">Share: ${formatRoundedRupee(memberShare[m]||0)}</span>
                 <span class="green">Settled: ₹${(memberPaid[m]||0).toFixed(2)}</span>
                 ${statusHTML}
             </div>
@@ -2249,6 +2732,8 @@ function exportBackup(){
         transactions,
         personalTransactions,
         personalPhone,
+        currentGroupUser,
+        memberPersonIds,
         exportedAt: new Date().toISOString()
     };
 
@@ -2284,6 +2769,8 @@ function importBackup(event){
             transactions = Array.isArray(data.transactions) ? data.transactions : [];
             personalTransactions = Array.isArray(data.personalTransactions) ? data.personalTransactions : [];
             personalPhone = typeof data.personalPhone === "string" ? data.personalPhone : "";
+            currentGroupUser = typeof data.currentGroupUser === "string" ? data.currentGroupUser : "";
+            memberPersonIds = (data.memberPersonIds && typeof data.memberPersonIds === "object") ? data.memberPersonIds : {};
 
             expenses.forEach(expense => {
                 if(!Array.isArray(expense.shares)) expense.shares = [];
@@ -2292,12 +2779,34 @@ function importBackup(event){
                     if(typeof share.amount !== "number") share.amount = Number(share.amount) || 0;
                 });
                 if(typeof expense.amount !== "number") expense.amount = Number(expense.amount) || 0;
+                if(typeof expense.syncPersonal !== "boolean") expense.syncPersonal = false;
+                if(typeof expense.syncIndividual !== "boolean") expense.syncIndividual = false;
             });
 
             personalTransactions.forEach(t => {
                 if(typeof t.amount !== "number") t.amount = Number(t.amount) || 0;
                 if(t.type !== "income" && t.type !== "expense") t.type = "expense";
                 if(!t.category) t.category = "📦 Other";
+                if(t.sourceType !== "group" && t.sourceType !== "manual") t.sourceType = "manual";
+                if(typeof t.sourceExpenseId === "undefined") t.sourceExpenseId = null;
+            });
+
+            transactions.forEach(t => {
+                if(typeof t.amount !== "number") t.amount = Number(t.amount) || 0;
+                if(t.sourceType !== "group" && t.sourceType !== "manual") t.sourceType = "manual";
+                if(typeof t.sourceExpenseId === "undefined") t.sourceExpenseId = null;
+                if(typeof t.sourceMember === "undefined") t.sourceMember = null;
+            });
+
+            individualMembers.forEach(m => {
+                if(!m.id) m.id = generatePersonId();
+            });
+
+            members.forEach(name => {
+                if(!memberPersonIds[name]){
+                    let existingPerson = individualMembers.find(m => m.name === name);
+                    if(existingPerson) memberPersonIds[name] = existingPerson.id;
+                }
             });
 
             saveAll();
@@ -2327,6 +2836,8 @@ function clearAllData(){
     transactions = [];
     personalTransactions = [];
     personalPhone = "";
+    currentGroupUser = "";
+    memberPersonIds = {};
     editingExpenseId = null;
     editingPersonalId = null;
 
